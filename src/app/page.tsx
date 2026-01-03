@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 
 export default function HomePage() {
   const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
-  const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4', 'gallery-5'].includes(p.id));
+  const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2'].includes(p.id));
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {

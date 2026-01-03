@@ -41,6 +41,12 @@
       "description": "A person working out in the gym",
       "imageUrl": "https://iili.io/fjv7UTx.webp",
       "imageHint": "gym workout"
+    },
+    {
+      "id": "gallery-2",
+      "description": "Woman doing a leg press in a gym",
+      "imageUrl": "https://iili.io/fjvGwdB.webp",
+      "imageHint": "gym leg-press"
     }
   ]
 }
