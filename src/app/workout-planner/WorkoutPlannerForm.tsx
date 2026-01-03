@@ -13,7 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { type PersonalizedWorkoutPlanOutput } from '@/ai/flows/personalized-workout-plan-suggestions';
 import { generateWorkoutPlanAction } from './actions';
-import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, Target, Calendar, Repeat, Dumbbell, Timer } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(1, 'Please specify your fitness goals.'),
@@ -168,26 +169,55 @@ export function WorkoutPlannerForm() {
               </Button>
             </form>
           </Form>
-        </CardContent>
+        </Content>
       </Card>
       
-      <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-border p-4 min-h-[400px]">
+      <div className="flex items-start justify-center rounded-lg border-2 border-dashed border-border p-4 min-h-[400px] overflow-y-auto">
         {isLoading && (
-          <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
+          <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse self-center">
             <Sparkles className="h-12 w-12 text-primary" />
             <p className="font-semibold">Generating your personalized plan...</p>
             <p className="text-sm">This may take a moment.</p>
           </div>
         )}
         {!isLoading && result && (
-          <Card className="w-full bg-card shadow-none border-none animate-in fade-in">
-            <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2"><Sparkles className="text-primary"/> Your Personalized Plan</CardTitle>
+          <Card className="w-full bg-transparent shadow-none border-none animate-in fade-in">
+            <CardHeader className="text-center">
+              <CardTitle className="font-headline text-2xl flex items-center justify-center gap-2"><Sparkles className="text-primary"/> {result.title}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-sm max-w-none whitespace-pre-wrap font-mono bg-muted p-4 rounded-md">{result.workoutPlan}</div>
+            <CardContent className="space-y-6">
+              <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                {result.weeklySchedule?.map((day, dayIndex) => (
+                  <AccordionItem value={`item-${dayIndex}`} key={dayIndex}>
+                    <AccordionTrigger className="font-semibold text-lg hover:no-underline">
+                      <div className='flex items-center gap-3'>
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary font-bold text-sm">{dayIndex + 1}</div>
+                        <div>
+                            <p>{day.day}: <span className="font-normal text-base">{day.focus}</span></p>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-4 pt-2">
+                        {day.exercises.map((exercise, exIndex) => (
+                          <li key={exIndex} className="p-4 bg-muted/50 rounded-md border">
+                            <h4 className="font-semibold flex items-center gap-2"><Dumbbell size={16}/> {exercise.name}</h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2 text-sm text-muted-foreground">
+                                <p className="flex items-center gap-1.5"><Repeat size={14}/> <strong>Sets:</strong> {exercise.sets}</p>
+                                <p className="flex items-center gap-1.5"><Target size={14}/> <strong>Reps:</strong> {exercise.reps}</p>
+                                <p className="flex items-center gap-1.5"><Timer size={14}/> <strong>Rest:</strong> {exercise.rest}</p>
+                            </div>
+                            {exercise.notes && <p className="text-xs mt-2 text-muted-foreground/80"><em>Note: {exercise.notes}</em></p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+
               {result.disclaimer && (
-                <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800">
+                <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800 mt-6">
                   <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                   <div>
                     <h4 className="font-bold">Disclaimer</h4>
@@ -199,7 +229,7 @@ export function WorkoutPlannerForm() {
           </Card>
         )}
         {!isLoading && !result && (
-          <div className="text-center text-muted-foreground p-8">
+          <div className="text-center text-muted-foreground p-8 self-center">
             <h3 className="font-headline text-lg">Your workout plan will appear here.</h3>
             <p className="mt-2 text-sm">Fill out the form to get started!</p>
           </div>
