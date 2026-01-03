@@ -1,37 +1,32 @@
+
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ArrowRight, Dumbbell, Users, Award, Camera } from 'lucide-react';
+import { CheckCircle, ArrowRight, Dumbbell, Users, Award } from 'lucide-react';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { HeroSlideshow } from '@/components/HeroSlideshow';
 
 export default function HomePage() {
-  const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
+  const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'gallery-1', 'gallery-2', 'gallery-5'].includes(p.id));
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4', 'gallery-5'].includes(p.id));
 
   return (
     <div className="flex flex-col">
       <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center">
-        {heroImage && (
-          <Image
-            src={heroImage.imageUrl}
-            alt={heroImage.description}
-            fill
-            className="object-cover"
-            priority
-            data-ai-hint={heroImage.imageHint}
-          />
-        )}
+        <HeroSlideshow images={heroImages} />
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
             Forge Your Strength
           </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300">
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
             Join MuscleUp and unlock your true potential. Premium facilities, expert trainers, and a community that inspires.
           </p>
           <Button size="lg" asChild className="animate-fade-in-up animation-delay-500">
