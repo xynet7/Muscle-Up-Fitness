@@ -7,11 +7,18 @@ import { Separator } from "@/components/ui/separator";
 import { Printer } from "lucide-react";
 import { MEMBERSHIP_PLANS } from "@/lib/constants";
 import { useUser } from "@/firebase";
+import { useEffect, useState } from "react";
 
 export default function ReceiptPage({ params }: { params: { transactionId: string } }) {
+  const { user } = useUser();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // The transactionId is now just the planId
   const planId = params.transactionId;
-  const { user } = useUser();
   
   const purchaseDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -19,8 +26,8 @@ export default function ReceiptPage({ params }: { params: { transactionId: strin
 
   const planDetails = MEMBERSHIP_PLANS.find(p => p.id === planId) || { name: 'Unknown Plan', price: '0.00' };
 
-  // A simple pseudo-random transaction ID for display purposes
-  const displayTransactionId = `${planId}-${Date.now().toString().slice(-6)}`;
+  // A simple pseudo-random transaction ID for display purposes, generated only on the client
+  const displayTransactionId = isClient ? `${planId}-${Date.now().toString().slice(-6)}` : 'Generating...';
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 print:bg-white print:block">
@@ -31,10 +38,12 @@ export default function ReceiptPage({ params }: { params: { transactionId: strin
               <Logo />
               <CardDescription className="mt-2">Thank you for your purchase!</CardDescription>
             </div>
-            <Button variant="outline" size="icon" onClick={() => window.print()} className="print:hidden">
-              <Printer className="h-4 w-4" />
-              <span className="sr-only">Print Receipt</span>
-            </Button>
+            {isClient && (
+              <Button variant="outline" size="icon" onClick={() => window.print()} className="print:hidden">
+                <Printer className="h-4 w-4" />
+                <span className="sr-only">Print Receipt</span>
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
