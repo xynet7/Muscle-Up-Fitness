@@ -36,17 +36,17 @@ export default function HomePage() {
           </Button>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '0.8s'}}>
+            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '0.8s'}}>
               <Dumbbell className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Modern Equipment</h3>
               <p className="text-white/80 text-sm">State-of-the-art machines and free weights to help you reach your goals faster.</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1s'}}>
+            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1s'}}>
               <Award className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Expert Trainers</h3>
               <p className="text-white/80 text-sm">Certified professionals dedicated to guiding you through every step of your journey.</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1.2s'}}>
+            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1.2s'}}>
               <Users className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Vibrant Community</h3>
               <p className="text-white/80 text-sm">Join a supportive and motivating community of fitness enthusiasts.</p>
@@ -122,7 +122,7 @@ export default function HomePage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground" variant={plan.highlight ? 'default' : 'outline'}>
+                  <Button asChild className="w-full group-hover:bg-destructive group-hover:text-destructive-foreground" variant={plan.highlight ? 'default' : 'outline'}>
                     <Link href={`/receipt/${Date.now()}-${plan.id}`}>Subscribe Now</Link>
                   </Button>
                 </CardFooter>
