@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles, User, UserPlus, Shield } from 'lucide-react';
+import { Dumbbell, Sparkles, User, Shield, LogIn } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 export function Header() {
   return (
@@ -21,24 +28,30 @@ export function Header() {
               <span className="hidden sm:inline">AI Planner</span>
             </Link>
           </Button>
-          <Button variant="ghost" asChild>
-            <Link href="/login">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Login</span>
-            </Link>
-          </Button>
-          <Button variant="ghost" asChild>
-            <Link href="/admin/login">
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign Up</span>
-            </Link>
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild>
+                <Link href="/login">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Member Login</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/admin/login">
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Admin Login</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
         </nav>
       </div>
     </header>
