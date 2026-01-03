@@ -11,16 +11,24 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { HeroSlideshow } from '@/components/HeroSlideshow';
 
 export default function HomePage() {
-  const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'gallery-1', 'gallery-2', 'gallery-5'].includes(p.id));
+  const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4', 'gallery-5'].includes(p.id));
 
   return (
     <div className="flex flex-col">
       <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center">
-        <HeroSlideshow images={heroImages} />
+        {heroImage && (
+            <Image
+                src={heroImage.imageUrl}
+                alt={heroImage.description}
+                fill
+                className="object-cover"
+                priority
+                data-ai-hint={heroImage.imageHint}
+            />
+        )}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
