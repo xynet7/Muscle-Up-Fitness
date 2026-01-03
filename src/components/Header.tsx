@@ -13,8 +13,7 @@ import {
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-auto max-w-screen-2xl flex-col items-start py-2">
-        <div className="flex w-full items-center justify-between">
+      <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
             <Logo />
             <nav className="flex items-center gap-2 sm:gap-4">
               <Button variant="ghost" asChild>
@@ -54,7 +53,6 @@ export function Header() {
               </DropdownMenu>
 
             </nav>
-        </div>
       </div>
     </header>
   );
