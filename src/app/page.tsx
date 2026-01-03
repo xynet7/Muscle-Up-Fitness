@@ -102,7 +102,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {MEMBERSHIP_PLANS.map((plan) => (
-              <Card key={plan.id} className={cn("flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-2", plan.highlight && "border-primary ring-2 ring-primary shadow-lg")}>
+              <Card key={plan.id} className={cn("group flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-primary", plan.highlight && "border-primary ring-2 ring-primary shadow-lg")}>
                 <CardHeader className="items-center text-center">
                   {plan.highlight && <Badge className="mb-2 absolute -top-3">Most Popular</Badge>}
                   <CardTitle className="font-headline text-2xl">{plan.name}</CardTitle>
@@ -122,7 +122,7 @@ export default function HomePage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
+                  <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground" variant={plan.highlight ? 'default' : 'outline'}>
                     <Link href={`/receipt/${Date.now()}-${plan.id}`}>Subscribe Now</Link>
                   </Button>
                 </CardFooter>
