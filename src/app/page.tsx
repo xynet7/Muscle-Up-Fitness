@@ -12,6 +12,27 @@ import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const SubscribeButton = ({ planId, highlight }: { planId: string; highlight: boolean; }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    // Generate the URL on the client-side to avoid hydration mismatch
+    router.push(`/receipt/${Date.now()}-${planId}`);
+  };
+
+  return (
+    <Button
+      onClick={handleClick}
+      className="w-full group-hover:bg-destructive group-hover:text-destructive-foreground"
+      variant={highlight ? 'default' : 'outline'}
+    >
+      Subscribe Now
+    </Button>
+  );
+};
+
 
 export default function HomePage() {
   const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
@@ -144,9 +165,7 @@ export default function HomePage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full group-hover:bg-destructive group-hover:text-destructive-foreground" variant={plan.highlight ? 'default' : 'outline'}>
-                    <Link href={`/receipt/${Date.now()}-${plan.id}`}>Subscribe Now</Link>
-                  </Button>
+                  <SubscribeButton planId={plan.id} highlight={plan.highlight || false} />
                 </CardFooter>
               </Card>
             ))}
