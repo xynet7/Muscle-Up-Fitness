@@ -11,6 +11,24 @@
       "description": "Avatar for admin user",
       "imageUrl": "https://images.unsplash.com/flagged/photo-1570612861542-284f4c12e75f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2NzM0NjY5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person face"
+    },
+    {
+      "id": "equipment",
+      "description": "Photo of modern gym equipment",
+      "imageUrl": "https://images.unsplash.com/photo-1544033527-b192daee1f5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3ltJTIwZXF1aXBtZW50fGVufDB8fHx8MTc2NzM3MTkyOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gym equipment"
+    },
+    {
+      "id": "trainers",
+      "description": "Photo of expert trainers helping people in a gym",
+      "imageUrl": "https://images.unsplash.com/photo-1619361728853-2542f3864532?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVyc29uYWwlMjB0cmFpbmVyfGVufDB8fHx8MTc2NzQzMDE2N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "personal trainer"
+    },
+    {
+      "id": "community",
+      "description": "Photo of a vibrant gym community",
+      "imageUrl": "https://images.unsplash.com/photo-1607962837359-5e7e89f86776?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxneW0lMjBjbGFzc3xlbnwwfHx8fDE3Njc0MzM3ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gym class"
     }
   ]
 }

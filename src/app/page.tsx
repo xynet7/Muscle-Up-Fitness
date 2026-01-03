@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, ArrowRight, Dumbbell, Users, Award } from 'lucide-react';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center">
+      <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center">
         {heroImage && (
           <Image
             src={heroImage.imageUrl}
@@ -24,7 +24,7 @@ export default function HomePage() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4">
             Forge Your Strength
@@ -37,6 +37,25 @@ export default function HomePage() {
               View Membership Plans <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
+
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+              <Dumbbell className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-headline text-xl font-bold mb-2">Modern Equipment</h3>
+              <p className="text-white/80 text-sm">State-of-the-art machines and free weights to help you reach your goals faster.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+              <Award className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-headline text-xl font-bold mb-2">Expert Trainers</h3>
+              <p className="text-white/80 text-sm">Certified professionals dedicated to guiding you through every step of your journey.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+              <Users className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-headline text-xl font-bold mb-2">Vibrant Community</h3>
+              <p className="text-white/80 text-sm">Join a supportive and motivating community of fitness enthusiasts.</p>
+            </div>
+          </div>
+
         </div>
       </section>
 
