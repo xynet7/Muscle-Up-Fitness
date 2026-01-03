@@ -1,0 +1,210 @@
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { type PersonalizedWorkoutPlanOutput } from '@/ai/flows/personalized-workout-plan-suggestions';
+import { generateWorkoutPlanAction } from './actions';
+import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+
+const formSchema = z.object({
+  fitnessGoals: z.string().min(1, 'Please specify your fitness goals.'),
+  subscriptionLevel: z.enum(['basic', 'premium', 'vip']),
+  currentFitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  equipmentAvailable: z.enum(['bodyweight', 'home_gym', 'full_gym']),
+  timeCommitment: z.string().min(1, 'Please specify your time commitment.'),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+export function WorkoutPlannerForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<PersonalizedWorkoutPlanOutput | null>(null);
+  const { toast } = useToast();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      fitnessGoals: '',
+      subscriptionLevel: 'premium',
+      currentFitnessLevel: 'intermediate',
+      equipmentAvailable: 'full_gym',
+      timeCommitment: '3-4 times a week, 60 minutes per session',
+    },
+  });
+
+  async function onSubmit(values: FormValues) {
+    setIsLoading(true);
+    setResult(null);
+    const response = await generateWorkoutPlanAction({
+      ...values,
+      equipmentAvailable: values.equipmentAvailable.replace('_', ' ')
+    });
+    setIsLoading(false);
+
+    if (response.success && response.data) {
+      setResult(response.data);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: response.error,
+      });
+    }
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline">Create Your Workout</CardTitle>
+          <CardDescription>Fill in your details and our AI will generate a personalized plan for you.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="fitnessGoals"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fitness Goals</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="e.g., lose 10 pounds, build muscle, run a 5k" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid sm:grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="currentFitnessLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Fitness Level</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select your fitness level" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="equipmentAvailable"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Equipment Available</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select your equipment" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="bodyweight">Bodyweight only</SelectItem>
+                          <SelectItem value="home_gym">Home Gym</SelectItem>
+                          <SelectItem value="full_gym">Full Gym</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+               <FormField
+                control={form.control}
+                name="timeCommitment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time Commitment</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="e.g., 3 hours per week" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                  control={form.control}
+                  name="subscriptionLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Membership Tier (for plan detail)</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select your plan" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="basic">Basic</SelectItem>
+                          <SelectItem value="premium">Premium</SelectItem>
+                          <SelectItem value="vip">VIP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles className="mr-2 h-4 w-4" /> Generate Plan</>
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+      
+      <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-border p-4 min-h-[400px]">
+        {isLoading && (
+          <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
+            <Sparkles className="h-12 w-12 text-primary" />
+            <p className="font-semibold">Generating your personalized plan...</p>
+            <p className="text-sm">This may take a moment.</p>
+          </div>
+        )}
+        {!isLoading && result && (
+          <Card className="w-full bg-card shadow-none border-none animate-in fade-in">
+            <CardHeader>
+              <CardTitle className="font-headline flex items-center gap-2"><Sparkles className="text-primary"/> Your Personalized Plan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm max-w-none whitespace-pre-wrap font-mono bg-muted p-4 rounded-md">{result.workoutPlan}</div>
+              {result.disclaimer && (
+                <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <h4 className="font-bold">Disclaimer</h4>
+                    <p className="mt-1">{result.disclaimer}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {!isLoading && !result && (
+          <div className="text-center text-muted-foreground p-8">
+            <h3 className="font-headline text-lg">Your workout plan will appear here.</h3>
+            <p className="mt-2 text-sm">Fill out the form to get started!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
