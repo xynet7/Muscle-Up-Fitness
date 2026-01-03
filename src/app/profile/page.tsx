@@ -33,14 +33,7 @@ export default function ProfilePage() {
 
   const getInitials = (name?: string | null) => {
     if (!name) return '';
-    const nameParts = name.split(' ');
-    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
-      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
-    }
-    if (nameParts[0]) {
-      return nameParts[0][0].toUpperCase();
-    }
-    return '';
+    return name.split(' ').map((n) => n[0]).join('');
   };
 
   const getPlanDetails = (planId: string) => {
@@ -94,7 +87,7 @@ export default function ProfilePage() {
                 <AvatarFallback className="text-2xl">{getInitials(user.displayName)}</AvatarFallback>
             </Avatar>
             <div className="w-full">
-                <CardTitle className="font-headline text-3xl">{user.displayName}</CardTitle>
+                <CardTitle className="font-headline text-3xl">{user.displayName || 'User'}</CardTitle>
                 <CardDescription>{user.email}</CardDescription>
             </div>
             </CardHeader>
