@@ -7,15 +7,15 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { doc } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Logo } from '@/components/Logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Logo } from '@/components/Logo';
 import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
@@ -41,23 +41,36 @@ export default function SignUpPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: "Firebase is not available. Please try again later.",
+      });
+      return;
+    }
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const newUser = userCredential.user;
 
       if (newUser) {
+        // Update auth profile
+        await updateProfile(newUser, { displayName: values.fullName });
+
+        // Create firestore document
         const [firstName, ...lastNameParts] = values.fullName.split(' ');
         const lastName = lastNameParts.join(' ');
         
         const userDocRef = doc(firestore, 'users', newUser.uid);
         const userData = {
           id: newUser.uid,
-          firstName: firstName,
-          lastName: lastName,
+          firstName: firstName || '',
+          lastName: lastName || '',
           email: newUser.email,
           fitnessGoals: ''
         };
         setDocumentNonBlocking(userDocRef, userData, { merge: true });
+        
         router.push('/');
       }
     } catch (error: any) {

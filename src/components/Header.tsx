@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles, User, Shield, LogIn, LogOut } from 'lucide-react';
+import { Dumbbell, Sparkles, User, Shield, LogIn, LogOut, UserCircle } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,10 +26,13 @@ export function Header() {
   const getInitials = (name?: string | null) => {
     if (!name) return '';
     const nameParts = name.split(' ');
-    if (nameParts.length > 1) {
+    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
       return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
     }
-    return name[0].toUpperCase();
+    if (nameParts[0]) {
+      return nameParts[0][0].toUpperCase();
+    }
+    return '';
   }
 
   return (
@@ -69,6 +72,13 @@ export function Header() {
                             <p className="font-medium">{user.displayName || 'User'}</p>
                             <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile">
+                            <UserCircle className="mr-2 h-4 w-4" />
+                            <span>My Profile</span>
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
