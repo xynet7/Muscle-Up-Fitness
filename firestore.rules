@@ -1,0 +1,110 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model combined with a role-based system for administrators.
+ * A user's private data, such as their profile and subscriptions, is accessible only to them. Publicly-facing data, like
+ * membership plans, is readable by anyone but can only be modified by administrators.
+ *
+ * Data Structure: User-specific data is hierarchically organized under the /users/{userId} path. For example, a user's
+ * subscriptions and their corresponding receipts are stored in subcollections within their user document. This structure
+ * naturally scopes access and allows for efficient, secure queries. Administrative roles are managed in a separate top-level
+ * collection, /roles_admin, where the existence of a document signifies admin privileges.
+ *
+ * Key Security Decisions:
+ * - User Isolation: Users are strictly sandboxed. They can only access documents within their own data tree (e.g., /users/{their_own_userId}/...).
+ * - Admin Privileges: A separate /roles_admin collection grants administrative powers. This collection is locked down; only existing admins can manage it, preventing privilege escalation. The first admin must be created server-side or via the console.
+ * - Public Read-Only Data: The /membershipPlans collection is world-readable to allow any visitor to see available plans, but write access is reserved for admins.
+ * - Structural Integrity: The path for receipts has been defined as a subcollection of a user's subscription (/users/{userId}/subscriptions/{subscriptionId}/receipts/{receiptId}) to ensure that ownership is inherited directly from the path. This is more secure and performant than the originally proposed top-level path, which would have required complex and costly cross-collection lookups.
+ *
+ * Denormalization for Authorization:
+ * - Ownership is primarily determined by the document path (e.g., `isOwner(userId)` checks the {userId} wildcard).
+ * - For documents created within a user's data tree (like a Subscription), a `userId` field is required in the document data itself. This is validated on creation to match the path, ensuring a permanent and immutable link to the owner. This avoids lookups and reinforces the ownership model.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for reusable logic
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+    function documentExists() {
+      return resource != null;
+    }
+
+    /**
+     * @description Manages user profile documents.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user can create their own user profile document.
+     * @deny (update) An authenticated user cannot update another user's profile.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing all user profiles for privacy.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && documentExists() && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && documentExists();
+    }
+
+    /**
+     * @description Stores details about available gym membership plans.
+     * @path /membershipPlans/{membershipPlanId}
+     * @allow (get) Any user, signed in or not, can view the details of a membership plan.
+     * @deny (create) A regular, non-admin user cannot create a new membership plan.
+     * @principle Provides public read access for general information, but restricts writes to administrators.
+     */
+    match /membershipPlans/{membershipPlanId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && documentExists();
+      allow delete: if isAdmin() && documentExists();
+    }
+
+    /**
+     * @description Stores a user's subscription to a specific membership plan.
+     * @path /users/{userId}/subscriptions/{subscriptionId}
+     * @allow (create) An authenticated user can create a subscription for themselves under their own user document.
+     * @deny (get) A user cannot read another user's subscription information.
+     * @principle Enforces document ownership within a user-specific subcollection.
+     */
+    match /users/{userId}/subscriptions/{subscriptionId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isOwner(userId) && documentExists() && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(userId) && documentExists();
+    }
+
+    /**
+     * @description Stores receipts associated with a user's subscription purchase.
+     * @path /users/{userId}/subscriptions/{subscriptionId}/receipts/{receiptId}
+     * @allow (list) A user can list all receipts for one of their subscriptions.
+     * @deny (get) A user cannot access a receipt belonging to another user's subscription.
+     * @principle Inherits ownership from the nested path, ensuring receipts are as private as the subscriptions they belong to.
+     */
+    match /users/{userId}/subscriptions/{subscriptionId}/receipts/{receiptId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.subscriptionId == subscriptionId;
+      allow update: if isOwner(userId) && documentExists() && request.resource.data.subscriptionId == resource.data.subscriptionId;
+      allow delete: if isOwner(userId) && documentExists();
+    }
+
+    /**
+     * @description Manages admin role grants. The existence of a document here confers admin rights.
+     * @path /roles_admin/{userId}
+     * @allow (get) An admin can check if another user is an admin.
+     * @deny (create) A non-admin user cannot make themselves or anyone else an admin.
+     * @principle Protects a critical authorization collection to prevent privilege escalation.
+     */
+    match /roles_admin/{userId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin() && documentExists();
+      allow delete: if isAdmin() && documentExists();
+    }
+  }
+}

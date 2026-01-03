@@ -1,0 +1,265 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the MuscleUp gym website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The date of birth of the user.",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the user was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "dateOfBirth",
+        "createdAt"
+      ]
+    },
+    "MembershipPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MembershipPlan",
+      "type": "object",
+      "description": "Represents a gym membership plan offered by MuscleUp.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MembershipPlan entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the membership plan (e.g., Basic, Premium)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the plan's benefits and features."
+        },
+        "durationDays": {
+          "type": "number",
+          "description": "The duration of the membership in days."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the membership plan."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "durationDays",
+        "price"
+      ]
+    },
+    "Subscription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subscription",
+      "type": "object",
+      "description": "Represents a user's subscription to a membership plan.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subscription entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Subscription)"
+        },
+        "membershipPlanId": {
+          "type": "string",
+          "description": "Reference to MembershipPlan. (Relationship: MembershipPlan 1:N Subscription)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the subscription.",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the subscription.",
+          "format": "date"
+        },
+        "purchaseDate": {
+          "type": "string",
+          "description": "The date when the subscription was purchased.",
+          "format": "date-time"
+        },
+        "receiptId": {
+          "type": "string",
+          "description": "Unique identifier for the receipt related to the subscription."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "membershipPlanId",
+        "startDate",
+        "endDate",
+        "purchaseDate",
+        "receiptId"
+      ]
+    },
+    "Receipt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Receipt",
+      "type": "object",
+      "description": "Represents a receipt for a subscription purchase.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Receipt entity."
+        },
+        "subscriptionId": {
+          "type": "string",
+          "description": "Reference to Subscription. (Relationship: Subscription 1:1 Receipt)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount paid for the subscription."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The payment method used for the purchase (e.g., Credit Card, PayPal)."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "The date and time of the transaction.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "subscriptionId",
+        "amount",
+        "paymentMethod",
+        "transactionDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Access is restricted to the user themselves based on the userId path. Includes denormalized 'userId'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/membershipPlans/{membershipPlanId}",
+        "definition": {
+          "entityName": "MembershipPlan",
+          "schema": {
+            "$ref": "#/backend/entities/MembershipPlan"
+          },
+          "description": "Stores details about membership plans.  Read access is public, write access restricted to admins.",
+          "params": [
+            {
+              "name": "membershipPlanId",
+              "description": "The unique identifier of the membership plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subscriptions/{subscriptionId}",
+        "definition": {
+          "entityName": "Subscription",
+          "schema": {
+            "$ref": "#/backend/entities/Subscription"
+          },
+          "description": "Stores user subscriptions. Access restricted to the user based on path-based ownership. Includes denormalized 'userId'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subscriptionId",
+              "description": "The unique identifier of the subscription."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subscriptions/{subscriptionId}/receipts/{receiptId}",
+        "definition": {
+          "entityName": "Receipt",
+          "schema": {
+            "$ref": "#/backend/entities/Receipt"
+          },
+          "description": "Stores receipts for subscriptions.  Access restricted to admins or the user who owns the subscription (requires a get() to the parent document).",
+          "params": [
+            {
+              "name": "subscriptionId",
+              "description": "The unique identifier of the subscription."
+            },
+            {
+              "name": "receiptId",
+              "description": "The unique identifier of the receipt."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "role",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Documents in this collection grant admin privileges to the user.  Authorization based on document existence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the admin user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage users, membership plans, subscriptions, and receipts for the MuscleUp gym website. It emphasizes authorization independence and supports the application's core features, including membership plan display, subscription purchase, receipt generation, admin login, and membership management.\n\n**Authorization Independence and Security:**\n\n*   **Users Collection:** Stores user profiles. Access is restricted to the user themselves (path-based ownership: `/users/{userId}`).\n*   **MembershipPlans Collection:** Stores membership plan details. This collection can be read by all users for displaying available plans, but write access is restricted to administrators.\n*   **Users/{userId}/Subscriptions:** This subcollection holds subscription data specific to each user. The `userId` is embedded in the path, ensuring ownership. The `membershipPlanId`, `startDate`, `endDate` and `purchaseDate` fields hold relevant information about the user's subscription.\n*   **Subscriptions/{subscriptionId}/Receipts:** This subcollection stores receipts associated with each subscription. The `subscriptionId` is included in the path.\n*   **Roles Collection:** The `/roles_admin/{userId}` document's existence determines admin privileges. This avoids relying on custom claims.\n\n**QAPs Support:**\n\n*   The structure supports QAPs by segregating data based on access needs and utilizing path-based ownership. Listing subscriptions is secure because it's scoped to the individual user's document, and only that user can access their subscriptions.\n\n**Admin Panel Support:**\n\n*   The `/roles_admin/{userId}` collection clearly defines administrative privileges.  The admin panel logic can check for the existence of a document in this collection to grant access to administrative features.\n\n**Denormalization:**\n\n*   The `Subscription` includes `userId` and `membershipPlanId` for direct access without requiring additional lookups.  While not strictly authorization data, it streamlines data retrieval for common use cases.\n\nThis structure facilitates secure and scalable management of users, membership plans, subscriptions, and receipts while adhering to the core design principles."
+  }
+}
