@@ -18,11 +18,11 @@ export default function AdminLoginPage() {
           <form className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="admin@muscleup.com" defaultValue="admin@muscleup.com" required />
+              <Input id="email" type="email" placeholder="admin@example.com" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" defaultValue="password" required />
+              <Input id="password" type="password" required />
             </div>
             <Button asChild className="w-full">
               <Link href="/admin/memberships">Login</Link>
