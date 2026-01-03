@@ -1,12 +1,11 @@
-import { Dumbbell } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn('flex items-center gap-2 text-xl font-bold font-headline text-primary', className)}>
-      <Dumbbell className="h-6 w-6" />
-      <span>MuscleUp</span>
+    <Link href="/" className={cn('flex items-center gap-2', className)}>
+      <Image src="https://iili.io/fjejDI1.png" alt="MuscleUp Logo" width={140} height={35} />
     </Link>
   );
 }
