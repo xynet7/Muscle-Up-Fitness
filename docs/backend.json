@@ -1,81 +1,38 @@
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the MuscleUp gym website.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The first name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the user.",
-          "format": "email"
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The date of birth of the user.",
-          "format": "date"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "The date and time when the user was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "firstName",
-        "lastName",
-        "email",
-        "dateOfBirth",
-        "createdAt"
-      ]
-    },
     "MembershipPlan": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "MembershipPlan",
       "type": "object",
-      "description": "Represents a gym membership plan offered by MuscleUp.",
+      "description": "Represents a gym membership plan.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the MembershipPlan entity."
+          "description": "Unique identifier for the membership plan."
         },
         "name": {
           "type": "string",
-          "description": "The name of the membership plan (e.g., Basic, Premium)."
+          "description": "Name of the membership plan (e.g., 'Basic', 'Premium')."
         },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the plan's benefits and features."
-        },
-        "durationDays": {
+        "durationMonths": {
           "type": "number",
-          "description": "The duration of the membership in days."
+          "description": "Duration of the membership plan in months."
         },
         "price": {
           "type": "number",
-          "description": "The price of the membership plan."
+          "description": "Price of the membership plan."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the plan's benefits and features."
         }
       },
       "required": [
         "id",
         "name",
-        "description",
-        "durationDays",
-        "price"
+        "durationMonths",
+        "price",
+        "description"
       ]
     },
     "Subscription": {
@@ -86,34 +43,29 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Subscription entity."
+          "description": "Unique identifier for the subscription."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Subscription)"
+          "description": "Reference to the User. (Relationship: User 1:N Subscription)"
         },
         "membershipPlanId": {
           "type": "string",
-          "description": "Reference to MembershipPlan. (Relationship: MembershipPlan 1:N Subscription)"
+          "description": "Reference to the MembershipPlan. (Relationship: MembershipPlan 1:N Subscription)"
         },
         "startDate": {
           "type": "string",
-          "description": "The start date of the subscription.",
-          "format": "date"
+          "description": "Start date of the subscription.",
+          "format": "date-time"
         },
         "endDate": {
           "type": "string",
-          "description": "The end date of the subscription.",
-          "format": "date"
-        },
-        "purchaseDate": {
-          "type": "string",
-          "description": "The date when the subscription was purchased.",
+          "description": "End date of the subscription.",
           "format": "date-time"
         },
         "receiptId": {
           "type": "string",
-          "description": "Unique identifier for the receipt related to the subscription."
+          "description": "Reference to the Receipt. (Relationship: Receipt 1:1 Subscription)"
         }
       },
       "required": [
@@ -122,7 +74,6 @@
         "membershipPlanId",
         "startDate",
         "endDate",
-        "purchaseDate",
         "receiptId"
       ]
     },
@@ -130,36 +81,97 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Receipt",
       "type": "object",
-      "description": "Represents a receipt for a subscription purchase.",
+      "description": "Represents a receipt for a membership purchase.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Receipt entity."
-        },
-        "subscriptionId": {
-          "type": "string",
-          "description": "Reference to Subscription. (Relationship: Subscription 1:1 Receipt)"
-        },
-        "amount": {
-          "type": "number",
-          "description": "The amount paid for the subscription."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "The payment method used for the purchase (e.g., Credit Card, PayPal)."
+          "description": "Unique identifier for the receipt."
         },
         "transactionDate": {
           "type": "string",
-          "description": "The date and time of the transaction.",
+          "description": "Date of the transaction.",
           "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount paid for the subscription."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the transaction (e.g., 'Credit Card', 'PayPal')."
+        },
+        "subscriptionId": {
+          "type": "string",
+          "description": "Reference to the Subscription. (Relationship: Subscription 1:1 Receipt)"
         }
       },
       "required": [
         "id",
-        "subscriptionId",
+        "transactionDate",
         "amount",
         "paymentMethod",
-        "transactionDate"
+        "subscriptionId"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the gym website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "fitnessGoals": {
+          "type": "string",
+          "description": "Fitness goals of the user."
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "fitnessGoals"
+      ]
+    },
+    "Admin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Admin",
+      "type": "object",
+      "description": "Represents an administrator of the gym website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the admin user."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the admin user."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the admin user (e.g., 'superadmin', 'manager')."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "role"
       ]
     }
   },
@@ -172,33 +184,33 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles.  Access is restricted to the user themselves based on the userId path. Includes denormalized 'userId'.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
         "path": "/membershipPlans/{membershipPlanId}",
         "definition": {
           "entityName": "MembershipPlan",
           "schema": {
             "$ref": "#/backend/entities/MembershipPlan"
           },
-          "description": "Stores details about membership plans.  Read access is public, write access restricted to admins.",
+          "description": "Stores all membership plans available on the gym website. Anyone should be able to read, only admins can write.",
           "params": [
             {
               "name": "membershipPlanId",
               "description": "The unique identifier of the membership plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Accessible by the user and potentially by admins for management.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user. This ID will match the Firebase Auth UID."
             }
           ]
         }
@@ -210,11 +222,11 @@
           "schema": {
             "$ref": "#/backend/entities/Subscription"
           },
-          "description": "Stores user subscriptions. Access restricted to the user based on path-based ownership. Includes denormalized 'userId'.",
+          "description": "Stores a user's subscription information. Accessible only by the user and potentially admins.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user."
+              "description": "The unique identifier of the user, matching the Firebase Auth UID."
             },
             {
               "name": "subscriptionId",
@@ -224,17 +236,17 @@
         }
       },
       {
-        "path": "/subscriptions/{subscriptionId}/receipts/{receiptId}",
+        "path": "/users/{userId}/receipts/{receiptId}",
         "definition": {
           "entityName": "Receipt",
           "schema": {
             "$ref": "#/backend/entities/Receipt"
           },
-          "description": "Stores receipts for subscriptions.  Access restricted to admins or the user who owns the subscription (requires a get() to the parent document).",
+          "description": "Stores receipts associated with a user's subscription. Accessible only by the user and potentially admins.",
           "params": [
             {
-              "name": "subscriptionId",
-              "description": "The unique identifier of the subscription."
+              "name": "userId",
+              "description": "The unique identifier of the user, matching the Firebase Auth UID."
             },
             {
               "name": "receiptId",
@@ -246,20 +258,20 @@
       {
         "path": "/roles_admin/{userId}",
         "definition": {
-          "entityName": "role",
+          "entityName": "Admin",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/backend/entities/Admin"
           },
-          "description": "Documents in this collection grant admin privileges to the user.  Authorization based on document existence.",
+          "description": "Stores admin roles. The existence of a document at this path indicates admin privileges for the given user ID. Uses Existence over Content strategy.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the admin user."
+              "description": "The unique identifier of the admin user, matching the Firebase Auth UID."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to manage users, membership plans, subscriptions, and receipts for the MuscleUp gym website. It emphasizes authorization independence and supports the application's core features, including membership plan display, subscription purchase, receipt generation, admin login, and membership management.\n\n**Authorization Independence and Security:**\n\n*   **Users Collection:** Stores user profiles. Access is restricted to the user themselves (path-based ownership: `/users/{userId}`).\n*   **MembershipPlans Collection:** Stores membership plan details. This collection can be read by all users for displaying available plans, but write access is restricted to administrators.\n*   **Users/{userId}/Subscriptions:** This subcollection holds subscription data specific to each user. The `userId` is embedded in the path, ensuring ownership. The `membershipPlanId`, `startDate`, `endDate` and `purchaseDate` fields hold relevant information about the user's subscription.\n*   **Subscriptions/{subscriptionId}/Receipts:** This subcollection stores receipts associated with each subscription. The `subscriptionId` is included in the path.\n*   **Roles Collection:** The `/roles_admin/{userId}` document's existence determines admin privileges. This avoids relying on custom claims.\n\n**QAPs Support:**\n\n*   The structure supports QAPs by segregating data based on access needs and utilizing path-based ownership. Listing subscriptions is secure because it's scoped to the individual user's document, and only that user can access their subscriptions.\n\n**Admin Panel Support:**\n\n*   The `/roles_admin/{userId}` collection clearly defines administrative privileges.  The admin panel logic can check for the existence of a document in this collection to grant access to administrative features.\n\n**Denormalization:**\n\n*   The `Subscription` includes `userId` and `membershipPlanId` for direct access without requiring additional lookups.  While not strictly authorization data, it streamlines data retrieval for common use cases.\n\nThis structure facilitates secure and scalable management of users, membership plans, subscriptions, and receipts while adhering to the core design principles."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the MuscleUp gym membership application. It leverages path-based ownership for user-specific data and a dedicated collection for global admin roles. This design avoids hierarchical authorization dependencies (`get()` calls in security rules), enabling atomic operations (transactions/batches) and simplifying debugging. The design uses Structural Segregation (Homogeneous Security Posture) by storing all documents in a collection that shares the same security requirements. For example, user subscriptions are stored under their respective user document to enforce ownership. Membership Plans are stored in a top-level collection because they do not have an owner and are visible to all users. This structure enables secure list operations via segregation. Subscriptions and Receipts are stored as subcollections of users to keep ownership and access simple."
   }
 }
