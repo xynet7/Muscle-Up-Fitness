@@ -38,33 +38,9 @@
     },
     {
       "id": "gallery-1",
-      "description": "A person lifting weights in a gym",
-      "imageUrl": "https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3ZWlnaHQlMjBsaWZ0aW5nfGVufDB8fHx8MTc2NzM1MDA1M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "weight lifting"
-    },
-    {
-      "id": "gallery-2",
-      "description": "A group of people in a yoga class",
-      "imageUrl": "https://images.unsplash.com/photo-1608405059861-b21a68ae76a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx5b2dhJTIwY2xhc3N8ZW58MHx8fHwxNzY3MzYyMjU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "yoga class"
-    },
-    {
-      "id": "gallery-3",
-      "description": "Treadmills in a row in a gym",
-      "imageUrl": "https://images.unsplash.com/photo-1657803778187-187c5f625f4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxneW0lMjB0cmVhZG1pbGx8ZW58MHx8fHwxNzY3NDM0MDQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "gym treadmill"
-    },
-    {
-      "id": "gallery-4",
-      "description": "A person doing cardio on an elliptical machine",
-      "imageUrl": "https://images.unsplash.com/photo-1662386392805-573808794a21?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxneW0lMjBjYXJkaW98ZW58MHx8fHwxNzY3NDM0MDQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "gym cardio"
-    },
-    {
-      "id": "gallery-5",
-      "description": "The entrance and reception area of the gym",
-      "imageUrl": "https://images.unsplash.com/photo-1766031263281-43cdaa6e624a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxneW0lMjBlbnRyYW5jZXxlbnwwfHx8fDE3Njc0MzQwNDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "gym entrance"
+      "description": "A person working out in the gym",
+      "imageUrl": "https://iili.io/fjv7UTx.webp",
+      "imageHint": "gym workout"
     }
   ]
 }
