@@ -37,12 +37,12 @@ export function PlanDialog({ children, plan }: PlanDialogProps) {
                         <Input id="name" defaultValue={plan?.name} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="price" className="text-right">Price ($)</Label>
+                        <Label htmlFor="price" className="text-right">Price (₹)</Label>
                         <Input id="price" type="number" step="0.01" defaultValue={plan?.price} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="duration" className="text-right">Duration</Label>
-                        <Input id="duration" defaultValue={plan?.duration} className="col-span-3" placeholder="e.g., month, year" />
+                        <Input id="duration" defaultValue={plan?.duration} className="col-span-3" placeholder="e.g., month, 6 months" />
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label htmlFor="features" className="text-right pt-2">Features</Label>

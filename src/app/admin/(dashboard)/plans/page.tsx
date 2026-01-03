@@ -45,7 +45,7 @@ export default function PlansPage() {
                   <div className="font-medium">{plan.name}</div>
                   {plan.highlight && <Badge variant="outline">Most Popular</Badge>}
                 </TableCell>
-                <TableCell>${plan.price}/{plan.duration}</TableCell>
+                <TableCell>₹{plan.price}/{plan.duration}</TableCell>
                 <TableCell className="hidden sm:table-cell">{plan.features.length} features</TableCell>
                 <TableCell className="text-right">
                     <PlanDialog plan={plan}>

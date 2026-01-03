@@ -112,7 +112,7 @@ export default function HomePage() {
                   {plan.highlight && <Badge className="mb-2 absolute -top-3">Most Popular</Badge>}
                   <CardTitle className="font-headline text-2xl">{plan.name}</CardTitle>
                   <CardDescription className="pt-2">
-                    <span className="text-4xl font-bold text-foreground">${plan.price}</span>
+                    <span className="text-4xl font-bold text-foreground">₹{plan.price}</span>
                     <span className="text-muted-foreground">/{plan.duration}</span>
                   </CardDescription>
                 </CardHeader>

@@ -4,7 +4,7 @@ export const MEMBERSHIP_PLANS = [
   {
     id: 'basic',
     name: 'Basic Fit',
-    price: '29.99',
+    price: '1000',
     duration: 'month',
     features: [
       'Access to all gym equipment',
@@ -16,8 +16,8 @@ export const MEMBERSHIP_PLANS = [
   {
     id: 'premium',
     name: 'Premium Pro',
-    price: '49.99',
-    duration: 'month',
+    price: '5000',
+    duration: '6 months',
     features: [
       'All Basic Fit benefits',
       'Access to group classes',
@@ -29,8 +29,8 @@ export const MEMBERSHIP_PLANS = [
   {
     id: 'vip',
     name: 'VIP Elite',
-    price: '99.99',
-    duration: 'month',
+    price: '10000',
+    duration: '12 months',
     features: [
       'All Premium Pro benefits',
       'Unlimited personal training sessions',

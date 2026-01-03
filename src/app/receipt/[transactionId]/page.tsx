@@ -52,12 +52,12 @@ export default function ReceiptPage({ params }: { params: { transactionId: strin
             <Separator />
             <div className="grid grid-cols-2 gap-2 text-muted-foreground">
               <span>MuscleUp - {planDetails.name} Membership</span>
-              <span className="text-right">${planDetails.price}</span>
+              <span className="text-right">₹{planDetails.price}</span>
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-2 font-bold text-lg">
               <span>Total Paid</span>
-              <span className="text-right">${planDetails.price}</span>
+              <span className="text-right">₹{planDetails.price}</span>
             </div>
           </div>
         </CardContent>
