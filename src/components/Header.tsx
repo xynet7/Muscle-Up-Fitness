@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles, UserCog } from 'lucide-react';
+import { Dumbbell, Sparkles, User, UserPlus, Shield } from 'lucide-react';
 
 export function Header() {
   return (
@@ -21,10 +21,22 @@ export function Header() {
               <span className="hidden sm:inline">AI Planner</span>
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="ghost" asChild>
+            <Link href="/login">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Login</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" asChild>
             <Link href="/admin/login">
-              <UserCog className="h-4 w-4" />
+              <Shield className="h-4 w-4" />
               <span className="hidden sm:inline">Admin</span>
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Up</span>
             </Link>
           </Button>
         </nav>
