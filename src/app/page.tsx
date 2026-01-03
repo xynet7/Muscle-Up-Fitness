@@ -16,16 +16,10 @@ import { useRouter } from 'next/navigation';
 
 const SubscribeButton = ({ planId, highlight }: { planId: string; highlight: boolean; }) => {
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleClick = () => {
-    if (isClient) {
-      router.push(`/receipt/${Date.now()}-${planId}`);
-    }
+    const transactionId = `${Date.now()}-${planId}`;
+    router.push(`/receipt/${transactionId}`);
   };
 
   return (
@@ -33,7 +27,6 @@ const SubscribeButton = ({ planId, highlight }: { planId: string; highlight: boo
       onClick={handleClick}
       className="w-full group-hover:bg-destructive group-hover:text-destructive-foreground"
       variant={highlight ? 'default' : 'outline'}
-      disabled={!isClient}
     >
       Subscribe Now
     </Button>
