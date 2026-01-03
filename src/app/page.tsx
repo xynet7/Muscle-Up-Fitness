@@ -2,14 +2,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ArrowRight, Dumbbell, Users, Award } from 'lucide-react';
+import { CheckCircle, ArrowRight, Dumbbell, Users, Award, Camera } from 'lucide-react';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export default function HomePage() {
   const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
+  const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4', 'gallery-5'].includes(p.id));
 
   return (
     <div className="flex flex-col">
@@ -26,36 +28,74 @@ export default function HomePage() {
         )}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down">
             Forge Your Strength
           </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8">
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300">
             Join MuscleUp and unlock your true potential. Premium facilities, expert trainers, and a community that inspires.
           </p>
-          <Button size="lg" asChild>
+          <Button size="lg" asChild className="animate-fade-in-up animation-delay-500">
             <Link href="#plans">
               View Membership Plans <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '0.8s'}}>
               <Dumbbell className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Modern Equipment</h3>
               <p className="text-white/80 text-sm">State-of-the-art machines and free weights to help you reach your goals faster.</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1s'}}>
               <Award className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Expert Trainers</h3>
               <p className="text-white/80 text-sm">Certified professionals dedicated to guiding you through every step of your journey.</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg">
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1.2s'}}>
               <Users className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-headline text-xl font-bold mb-2">Vibrant Community</h3>
               <p className="text-white/80 text-sm">Join a supportive and motivating community of fitness enthusiasts.</p>
             </div>
           </div>
+        </div>
+      </section>
 
+      <section id="gallery" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-headline">Gallery</h2>
+            <p className="text-muted-foreground mt-2">Take a tour of our facility.</p>
+          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full max-w-4xl mx-auto"
+          >
+            <CarouselContent>
+              {galleryImages.map((image) => (
+                <CarouselItem key={image.id} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1">
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-0">
+                        <Image
+                          src={image.imageUrl}
+                          alt={image.description}
+                          width={400}
+                          height={300}
+                          className="aspect-[4/3] w-full object-cover transition-transform duration-300 hover:scale-105"
+                          data-ai-hint={image.imageHint}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </div>
       </section>
 
