@@ -6,16 +6,21 @@ import { Logo } from "@/components/Logo";
 import { Separator } from "@/components/ui/separator";
 import { Printer } from "lucide-react";
 import { MEMBERSHIP_PLANS } from "@/lib/constants";
+import { useUser } from "@/firebase";
 
 export default function ReceiptPage({ params }: { params: { transactionId: string } }) {
-  const { transactionId } = params;
-  const [timestamp, planId] = transactionId.split('-');
+  // The transactionId is now just the planId
+  const planId = params.transactionId;
+  const { user } = useUser();
   
-  const purchaseDate = new Date(parseInt(timestamp)).toLocaleDateString('en-US', {
+  const purchaseDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
   const planDetails = MEMBERSHIP_PLANS.find(p => p.id === planId) || { name: 'Unknown Plan', price: '0.00' };
+
+  // A simple pseudo-random transaction ID for display purposes
+  const displayTransactionId = `${planId}-${Date.now().toString().slice(-6)}`;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 print:bg-white print:block">
@@ -38,11 +43,11 @@ export default function ReceiptPage({ params }: { params: { transactionId: strin
             <Separator />
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span className="font-medium text-muted-foreground">Transaction ID:</span>
-              <span className="text-right font-mono">{transactionId}</span>
+              <span className="text-right font-mono">{displayTransactionId}</span>
               <span className="font-medium text-muted-foreground">Date:</span>
               <span className="text-right">{purchaseDate}</span>
               <span className="font-medium text-muted-foreground">Billed To:</span>
-              <span className="text-right">John Doe (example)</span>
+              <span className="text-right">{user?.displayName || 'Guest User'}</span>
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-2 font-medium">

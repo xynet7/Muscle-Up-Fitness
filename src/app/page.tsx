@@ -18,8 +18,8 @@ const SubscribeButton = ({ planId, highlight }: { planId: string; highlight: boo
   const router = useRouter();
 
   const handleClick = () => {
-    const transactionId = `${Date.now()}-${planId}`;
-    router.push(`/receipt/${transactionId}`);
+    // Navigate to a static URL, removing the dynamic timestamp.
+    router.push(`/receipt/${planId}`);
   };
 
   return (
