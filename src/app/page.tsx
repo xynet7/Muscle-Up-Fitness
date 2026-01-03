@@ -11,30 +11,44 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { useEffect, useState } from 'react';
 
 export default function HomePage() {
-  const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
+  const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3', 'gallery-4', 'gallery-5'].includes(p.id));
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   return (
     <div className="flex flex-col">
-      <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center">
-        {heroImage && (
-            <Image
-                src={heroImage.imageUrl}
-                alt={heroImage.description}
-                fill
-                className="object-cover"
-                priority
-                data-ai-hint={heroImage.imageHint}
-            />
-        )}
+      <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center overflow-hidden">
+        {heroImages.map((image, index) => (
+          <Image
+            key={image.id}
+            src={image.imageUrl}
+            alt={image.description}
+            fill
+            className={cn(
+              "object-cover transition-opacity duration-1000",
+              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            )}
+            priority={index === 0}
+            data-ai-hint={image.imageHint}
+          />
+        ))}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
             Forge Your Strength
           </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
             Join MuscleUp and unlock your true potential. Premium facilities, expert trainers, and a community that inspires.
           </p>
           <Button size="lg" asChild className="animate-fade-in-up animation-delay-500">
