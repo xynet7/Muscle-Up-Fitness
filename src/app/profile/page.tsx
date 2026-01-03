@@ -1,157 +1,153 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ArrowRight, Dumbbell, Users, Award } from 'lucide-react';
-import { MEMBERSHIP_PLANS } from '@/lib/constants';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import placeholderImagesData from '@/lib/placeholder-images.json';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { MEMBERSHIP_PLANS } from '@/lib/constants';
+import { format } from 'date-fns';
+import { Crown, Dumbbell, Star, AlertTriangle } from 'lucide-react';
 
-export default function HomePage() {
-  const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
-  const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+export default function ProfilePage() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
+
+  const subscriptionsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'subscriptions');
+  }, [user, firestore]);
+
+  const { data: subscriptions, isLoading: isLoadingSubscriptions } = useCollection(subscriptionsQuery);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 5000); // Change image every 5 seconds
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
+  const getInitials = (name?: string | null) => {
+    if (!name) return '';
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
+      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+    }
+    if (nameParts[0]) {
+      return nameParts[0][0].toUpperCase();
+    }
+    return '';
+  };
+
+  const getPlanDetails = (planId: string) => {
+    return MEMBERSHIP_PLANS.find(p => p.id === planId);
+  };
+  
+  const getPlanIcon = (planId: string) => {
+    switch (planId) {
+      case 'basic':
+        return <Dumbbell className="h-5 w-5" />;
+      case 'premium':
+        return <Star className="h-5 w-5" />;
+      case 'vip':
+        return <Crown className="h-5 w-5" />;
+      default:
+        return null;
+    }
+  };
+
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="container mx-auto max-w-4xl py-12 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-4">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Skeleton className="h-8 w-1/3" />
+            <div className="space-y-4">
+               <Skeleton className="h-24 w-full" />
+               <Skeleton className="h-24 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col">
-      <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center overflow-hidden">
-        {heroImages.map((image, index) => (
-          <Image
-            key={image.id}
-            src={image.imageUrl}
-            alt={image.description}
-            fill
-            className={cn(
-              "object-cover transition-opacity duration-1000",
-              index === currentImageIndex ? "opacity-100" : "opacity-0"
-            )}
-            priority={index === 0}
-            data-ai-hint={image.imageHint}
-          />
-        ))}
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
-            Forge Your Strength
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-down animation-delay-300 [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
-            Join MuscleUp and unlock your true potential. Premium facilities, expert trainers, and a community that inspires.
-          </p>
-          <Button size="lg" asChild className="animate-fade-in-up animation-delay-500">
-            <Link href="#plans">
-              View Membership Plans <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '0.8s'}}>
-              <Dumbbell className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-headline text-xl font-bold mb-2">Modern Equipment</h3>
-              <p className="text-white/80 text-sm">State-of-the-art machines and free weights to help you reach your goals faster.</p>
+    <div className="bg-muted/40 min-h-screen">
+        <div className="container mx-auto max-w-4xl py-12 px-4">
+        <Card className="shadow-lg">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-6">
+            <Avatar className="h-20 w-20 border-4 border-background shadow-md">
+                <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
+                <AvatarFallback className="text-2xl">{getInitials(user.displayName)}</AvatarFallback>
+            </Avatar>
+            <div className="w-full">
+                <CardTitle className="font-headline text-3xl">{user.displayName}</CardTitle>
+                <CardDescription>{user.email}</CardDescription>
             </div>
-            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1s'}}>
-              <Award className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-headline text-xl font-bold mb-2">Expert Trainers</h3>
-              <p className="text-white/80 text-sm">Certified professionals dedicated to guiding you through every step of your journey.</p>
-            </div>
-            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-lg animate-float" style={{animationDelay: '1.2s'}}>
-              <Users className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-headline text-xl font-bold mb-2">Vibrant Community</h3>
-              <p className="text-white/80 text-sm">Join a supportive and motivating community of fitness enthusiasts.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+            <div>
+                <h3 className="text-xl font-semibold font-headline mb-4">My Memberships</h3>
+                {isLoadingSubscriptions ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-24 w-full rounded-lg" />
+                    </div>
+                ) : subscriptions && subscriptions.length > 0 ? (
+                <div className="grid gap-4">
+                    {subscriptions.map((sub: any) => {
+                    const plan = getPlanDetails(sub.membershipPlanId);
+                    if (!plan) return null;
 
-      <section id="gallery" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">Gallery</h2>
-            <p className="text-muted-foreground mt-2">Take a tour of our facility.</p>
-          </div>
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full max-w-4xl mx-auto"
-          >
-            <CarouselContent>
-              {galleryImages.map((image) => (
-                <CarouselItem key={image.id} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <Card className="overflow-hidden">
-                      <CardContent className="p-0">
-                        <Image
-                          src={image.imageUrl}
-                          alt={image.description}
-                          width={400}
-                          height={300}
-                          className="aspect-[4/3] w-full object-cover transition-transform duration-300 hover:scale-105"
-                          data-ai-hint={image.imageHint}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-        </div>
-      </section>
+                    const endDate = sub.endDate?.toDate ? sub.endDate.toDate() : new Date(sub.endDate);
+                    const isActive = endDate > new Date();
 
-      <section id="plans" className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">Choose Your Plan</h2>
-            <p className="text-muted-foreground mt-2">Simple, transparent pricing for everyone.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {MEMBERSHIP_PLANS.map((plan) => (
-              <Card key={plan.id} className={cn("group flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-primary", plan.highlight && "border-primary ring-2 ring-primary shadow-lg")}>
-                <CardHeader className="items-center text-center">
-                  {plan.highlight && <Badge className="mb-2 absolute -top-3">Most Popular</Badge>}
-                  <CardTitle className="font-headline text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="pt-2">
-                    <span className="text-4xl font-bold text-foreground">₹{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.duration}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                    <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                        <Link href="/signup">Subscribe Now</Link>
-                    </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+                    return (
+                        <div key={sub.id} className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center gap-4">
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary`}>
+                                    {getPlanIcon(plan.id)}
+                                </div>
+                                <div>
+                                <p className="font-semibold">{plan.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Subscribed on {sub.startDate?.toDate ? format(sub.startDate.toDate(), 'PPP') : 'N/A'}.
+                                    Renews on {format(endDate, 'PPP')}.
+                                </p>
+                                </div>
+                            </div>
+                            <Badge variant={isActive ? "default" : "destructive"} className={isActive ? "bg-green-600" : ""}>
+                                {isActive ? 'Active' : 'Expired'}
+                            </Badge>
+                        </div>
+                    );
+                    })}
+                </div>
+                ) : (
+                 <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>No Memberships Found</AlertTitle>
+                    <AlertDescription>
+                        You don't have any active or past memberships. Check out our plans to get started!
+                    </AlertDescription>
+                </Alert>
+                )}
+            </div>
+            </CardContent>
+        </Card>
         </div>
-      </section>
     </div>
   );
 }
