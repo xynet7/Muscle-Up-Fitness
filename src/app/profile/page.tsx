@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
 import { format } from 'date-fns';
-import { Crown, Dumbbell, Star, AlertTriangle } from 'lucide-react';
+import { Crown, Dumbbell, Star, AlertTriangle, User } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -30,11 +30,6 @@ export default function ProfilePage() {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
-
-  const getInitials = (name?: string | null) => {
-    if (!name) return '';
-    return name.split(' ').map((n) => n[0]).join('');
-  };
 
   const getPlanDetails = (planId: string) => {
     return MEMBERSHIP_PLANS.find(p => p.id === planId);
@@ -84,7 +79,9 @@ export default function ProfilePage() {
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-md">
                 <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
-                <AvatarFallback className="text-2xl">{getInitials(user.displayName)}</AvatarFallback>
+                <AvatarFallback>
+                  <User className="h-10 w-10" />
+                </AvatarFallback>
             </Avatar>
             <div className="w-full">
                 <CardTitle className="font-headline text-3xl">{user.displayName || 'User'}</CardTitle>
