@@ -169,7 +169,7 @@ export function WorkoutPlannerForm() {
               </Button>
             </form>
           </Form>
-        </Content>
+        </CardContent>
       </Card>
       
       <div className="flex items-start justify-center rounded-lg border-2 border-dashed border-border p-4 min-h-[400px] overflow-y-auto">
