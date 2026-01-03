@@ -12,27 +12,6 @@ import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-const SubscribeButton = ({ planId, highlight }: { planId: string; highlight: boolean; }) => {
-  const router = useRouter();
-
-  const handleClick = () => {
-    // Navigate to a static URL, removing the dynamic timestamp.
-    router.push(`/receipt/${planId}`);
-  };
-
-  return (
-    <Button
-      onClick={handleClick}
-      className="w-full group-hover:bg-destructive group-hover:text-destructive-foreground"
-      variant={highlight ? 'default' : 'outline'}
-    >
-      Subscribe Now
-    </Button>
-  );
-};
-
 
 export default function HomePage() {
   const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
@@ -165,7 +144,9 @@ export default function HomePage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <SubscribeButton planId={plan.id} highlight={plan.highlight || false} />
+                    <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
+                        <Link href="/signup">Subscribe Now</Link>
+                    </Button>
                 </CardFooter>
               </Card>
             ))}

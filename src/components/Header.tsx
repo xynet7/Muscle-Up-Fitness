@@ -10,6 +10,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
+    DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { useAuth, useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -66,20 +67,13 @@ export function Header() {
                         </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                        <div className="flex flex-col items-start p-2">
-                            <p className="font-medium">{user.displayName || 'User'}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                         </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                        <Link href="/profile">
-                            <UserCircle className="mr-2 h-4 w-4" />
-                            <span>My Profile</span>
-                        </Link>
-                    </DropdownMenuItem>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
