@@ -5,8 +5,8 @@ export async function generateWorkoutPlanAction(input: PersonalizedWorkoutPlanIn
   try {
     const result = await getPersonalizedWorkoutPlan(input);
     return { success: true, data: result };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: 'Failed to generate workout plan. Please try again.' };
+  } catch (error: any) {
+    console.error("AI Planner Error:", error.message);
+    return { success: false, error: 'Failed to generate workout plan. Please check server logs for details.' };
   }
 }
