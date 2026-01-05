@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Logo } from '@/components/Logo';
 import { Instagram, Twitter, QrCode } from 'lucide-react';
 import Link from 'next/link';
@@ -12,14 +11,7 @@ import { QRCode } from 'react-qrcode-logo';
 import { ClientOnly } from './ClientOnly';
 
 export function Footer() {
-  const [siteUrl, setSiteUrl] = useState('');
-
   const footerImage = placeholderImagesData.placeholderImages.find(p => p.id === 'footer-cta');
-
-  useEffect(() => {
-    // This effect runs only on the client, after hydration
-    setSiteUrl(window.location.origin);
-  }, []);
 
   return (
     <footer className="border-t border-border/40">
@@ -65,7 +57,7 @@ export function Footer() {
                   <PopoverContent className="w-auto p-4 bg-white">
                     <div className="text-center">
                         <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
-                        <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
+                        <QRCode value={typeof window !== 'undefined' ? window.location.origin : ''} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
                     </div>
                   </PopoverContent>
                 </Popover>
