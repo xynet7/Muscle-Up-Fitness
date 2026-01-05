@@ -1,5 +1,6 @@
 
-import { Users, LayoutDashboard } from "lucide-react";
+
+import { Users, LayoutDashboard, CalendarCheck } from "lucide-react";
 
 export const MEMBERSHIP_PLANS = [
   {
@@ -55,6 +56,11 @@ export const ADMIN_NAV_LINKS = [
     href: '/admin/plans',
     label: 'Plans',
     icon: LayoutDashboard,
+  },
+   {
+    href: '/admin/attendance',
+    label: 'Attendance',
+    icon: CalendarCheck,
   },
 ];
 

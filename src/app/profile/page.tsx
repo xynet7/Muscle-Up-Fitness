@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, DocumentData } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, DocumentData, doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
-import { format } from 'date-fns';
+import { format, startOfDay, isEqual } from 'date-fns';
 import { Crown, Dumbbell, Star, AlertTriangle, User, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +24,7 @@ export default function ProfilePage() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -33,6 +37,39 @@ export default function ProfilePage() {
 
   const { data: subscriptions, isLoading: isLoadingSubscriptions } = useCollection(subscriptionsQuery);
 
+  const attendanceQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'attendance');
+  }, [user, firestore]);
+
+  const { data: attendance, isLoading: isLoadingAttendance } = useCollection(attendanceQuery);
+
+  const attendedDays = useMemo(() => {
+    return attendance?.map(a => a.date.toDate()) || [];
+  }, [attendance]);
+
+  const handleDayClick = async (day: Date, { selected }: { selected: boolean }) => {
+    if (!user || !firestore) return;
+    const dayStart = startOfDay(day);
+    const docId = format(dayStart, 'yyyy-MM-dd');
+    const docRef = doc(firestore, `users/${user.uid}/attendance/${docId}`);
+
+    if (selected) {
+      // Day was already selected, so un-select it (delete the record)
+      deleteDocumentNonBlocking(docRef);
+       toast({ title: 'Attendance Removed', description: `Removed attendance for ${format(dayStart, 'PPP')}.` });
+    } else {
+      // Day was not selected, so select it (create the record)
+      const attendanceData = {
+        id: docId,
+        userId: user.uid,
+        date: dayStart,
+      };
+      setDocumentNonBlocking(docRef, attendanceData, {});
+      toast({ title: 'Attendance Marked!', description: `You marked your attendance for ${format(dayStart, 'PPP')}.` });
+    }
+  };
+  
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
@@ -74,12 +111,14 @@ export default function ProfilePage() {
               <Skeleton className="h-4 w-64" />
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-6">
             <Skeleton className="h-8 w-1/3" />
             <div className="space-y-4">
                <Skeleton className="h-24 w-full" />
                <Skeleton className="h-24 w-full" />
             </div>
+             <Skeleton className="h-8 w-1/3 mt-6" />
+             <Skeleton className="h-64 w-full" />
           </CardContent>
         </Card>
       </div>
@@ -102,7 +141,7 @@ export default function ProfilePage() {
                 <CardDescription>{user.email}</CardDescription>
             </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-8">
             <div>
                 <h3 className="text-xl font-semibold font-headline mb-4">My Memberships</h3>
                 {isLoadingSubscriptions ? (
@@ -171,6 +210,25 @@ export default function ProfilePage() {
                     </AlertDescription>
                 </Alert>
                 )}
+            </div>
+            <div>
+                 <h3 className="text-xl font-semibold font-headline mb-4">My Attendance</h3>
+                 <Card className="p-4">
+                    {isLoadingAttendance ? (
+                        <Skeleton className="h-64 w-full" />
+                    ) : (
+                        <Calendar
+                            mode="multiple"
+                            selected={attendedDays}
+                            onDayClick={handleDayClick}
+                            className="p-0"
+                            classNames={{
+                                day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                            }}
+                            footer={<p className="text-xs text-muted-foreground pt-4">Select a day to mark your attendance.</p>}
+                        />
+                    )}
+                 </Card>
             </div>
             </CardContent>
         </Card>

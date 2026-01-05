@@ -12,6 +12,7 @@
  * - /membershipPlans/{membershipPlanId}: Publicly readable data about available gym plans.
  * - /users/{userId}: A user's root profile document.
  * - /users/{userId}/subscriptions/{subscriptionId}: A user's private subscription records.
+ * - /users/{userId}/attendance/{attendanceId}: A user's private attendance records.
  * - /subscriptions_flat/{subscriptionId}: A denormalized collection of all subscriptions for admin querying.
  * - /roles_admin/{userId}: A lookup collection where the existence of a document signifies
  *   that the user is an administrator.
@@ -75,6 +76,13 @@ service cloud.firestore {
         && !('endDate' in data)
         && data.requestedDate == request.time;
     }
+    
+    // -------------------------------------------------------------------------
+    // Attendance-specific Helper Functions
+    // -------------------------------------------------------------------------
+    function isAttendanceOwnerConsistent(userId) {
+      return request.resource.data.userId == userId;
+    }
 
     // -------------------------------------------------------------------------
     // Collection Rules
@@ -98,6 +106,15 @@ service cloud.firestore {
       // A user can cancel their own active subscription (not yet implemented in UI)
       allow update: if isAdmin() || (isOwner(userId) && isExistingDoc() && isSubscriptionOwnerImmutable());
       allow delete: if false; // Disallow deletion for record keeping
+    }
+    
+     match /users/{userId}/attendance/{attendanceId} {
+      // User can read their own attendance, Admins can read anyone's attendance.
+      allow get, list: if isOwner(userId) || isAdmin();
+      // User can create and delete their own attendance records.
+      // Admin cannot create/delete on behalf of the user.
+      allow create, delete: if isOwner(userId) && isAttendanceOwnerConsistent(userId);
+      allow update: if false; // Disallow updates, just create/delete.
     }
     
     /**
