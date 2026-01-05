@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Logo } from '@/components/Logo';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -26,6 +26,7 @@ const formSchema = z.object({
 export default function AdminLoginPage() {
   const auth = useAuth();
   const router = useRouter();
+  const { user } = useUser();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,14 @@ export default function AdminLoginPage() {
       setError(authError);
     }
   }, [searchParams]);
+
+  // If user is already logged in and recognized, redirect them.
+  useEffect(() => {
+    if (user) {
+        router.push('/admin');
+    }
+  }, [user, router]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,10 +65,13 @@ export default function AdminLoginPage() {
         return;
     }
     try {
-        await signInWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        // Force a token refresh to ensure the latest auth state is available for Firestore rules.
+        await userCredential.user.getIdToken(true);
         // On successful login, redirect to the admin dashboard.
         // The dashboard layout will handle the admin role check.
-        router.push('/admin/memberships');
+        router.push('/admin');
+
     } catch (e: any) {
         // Handle Firebase auth errors (wrong password, user not found, etc.)
         const errorMessage = e.code === 'auth/invalid-credential' 

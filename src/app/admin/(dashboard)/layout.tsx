@@ -37,37 +37,42 @@ export default function AdminDashboardLayout({
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
 
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    // If auth state is still loading, do nothing yet.
-    if (isUserLoading || !firestore) {
+    // Wait until Firebase auth state is resolved.
+    if (isUserLoading || !firestore || !auth) {
       return;
     }
 
-    // If there's no user, redirect to login with an error.
+    // If there's no user, they are not logged in. Redirect to login.
     if (!user) {
       router.push('/admin/login?error=You must be logged in to view this page.');
       return;
     }
 
-    // Check for admin role once we have a user.
+    // User is logged in, now check for admin role.
     const checkAdminStatus = async () => {
+      setIsVerifying(true);
       const adminRoleDoc = doc(firestore, 'roles_admin', user.uid);
       try {
         const adminDocSnapshot = await getDoc(adminRoleDoc);
         if (adminDocSnapshot.exists()) {
           setIsAuthorized(true);
         } else {
-          // If user is not an admin, sign them out and redirect.
+          // If user exists but is not an admin, sign them out and redirect.
           await auth.signOut();
           router.push('/admin/login?error=You are not authorized to access this panel.');
         }
       } catch (error) {
         console.error("Error checking admin status:", error);
+        // On error, assume not authorized, sign out and redirect.
         await auth.signOut();
         router.push('/admin/login?error=An error occurred while verifying your permissions.');
+      } finally {
+        setIsVerifying(false);
       }
     };
 
@@ -75,11 +80,17 @@ export default function AdminDashboardLayout({
 
   }, [user, isUserLoading, firestore, auth, router]);
 
-  // While loading or verifying, show a loading skeleton.
-  if (isUserLoading || !isAuthorized) {
+  // While loading auth state or verifying admin role, show a full-screen loader.
+  if (isUserLoading || isVerifying || !isAuthorized) {
     return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <Skeleton className="h-full w-full" />
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <div className="flex flex-col items-center gap-4">
+                <Logo />
+                <p className="text-muted-foreground">Verifying access...</p>
+                <div className="w-full max-w-xs">
+                    <Skeleton className="h-40 w-full" />
+                </div>
+            </div>
         </div>
     );
   }
