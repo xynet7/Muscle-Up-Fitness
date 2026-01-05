@@ -232,11 +232,12 @@ export default function ProfilePage() {
                             onDayClick={handleDayClick}
                             className="p-0"
                             classNames={{
-                                day_selected: "bg-primary/90 text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                                day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
                                 day_today: "bg-accent text-accent-foreground",
                                 day_outside: "text-muted-foreground opacity-50",
+                                cell: "text-center",
                             }}
-                            footer={<p className="text-xs text-muted-foreground pt-4">Select a day to mark your attendance.</p>}
+                            footer={<p className="text-xs text-muted-foreground pt-4 text-center">Select a day to mark your attendance.</p>}
                         />
                     )}
                  </Card>
