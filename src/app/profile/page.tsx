@@ -108,7 +108,7 @@ export default function ProfilePage() {
   });
 
 
-  if (isUserLoading || !user || !isClient) {
+  if (isUserLoading || !user) {
     return (
       <div className="container mx-auto max-w-4xl py-12 px-4">
         <Card>
@@ -139,7 +139,7 @@ export default function ProfilePage() {
         <Card className="shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-md">
-                <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
+                {isClient && <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />}
                 <AvatarFallback>
                   <User className="h-10 w-10" />
                 </AvatarFallback>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                                   <div>
                                   <p className="font-semibold">{plan.name}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    {isClient ? getSubscriptionPeriod() : <Skeleton className="h-4 w-64" />}
+                                    {isClient ? getSubscriptionPeriod() : <Skeleton className="h-4 w-64 mt-1" />}
                                   </p>
                                   </div>
                               </div>

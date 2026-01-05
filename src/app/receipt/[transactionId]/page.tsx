@@ -134,8 +134,10 @@ function ReceiptSkeleton() {
     return (
         <>
             <CardHeader className="text-center items-center">
-                <Skeleton className="h-10 w-24 mb-4" />
-                <Skeleton className="h-7 w-48" />
+                <div className="mx-auto">
+                    <Logo />
+                </div>
+                <Skeleton className="h-7 w-48 mt-4" />
                 <Skeleton className="h-4 w-64 mt-1" />
             </CardHeader>
             <CardContent className="space-y-6">

@@ -149,7 +149,7 @@ export default function MembershipsPage() {
                     </TableCell>
                 </TableRow>
             )}
-            {!isLoadingSubscriptions && sortedSubscriptions?.map((membership: any) => (
+            {isClient && !isLoadingSubscriptions && sortedSubscriptions?.map((membership: any) => (
               <TableRow key={membership.id}>
                 <TableCell>
                   <div className="font-medium">{membership.userName}</div>
@@ -157,7 +157,7 @@ export default function MembershipsPage() {
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">{getPlanName(membership.membershipPlanId)}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                    {isClient && membership.requestedDate?.toDate ? membership.requestedDate.toDate().toLocaleDateString() : 'N/A'}
+                    {membership.requestedDate?.toDate ? membership.requestedDate.toDate().toLocaleDateString() : 'N/A'}
                 </TableCell>
                 <TableCell>
                   <Badge

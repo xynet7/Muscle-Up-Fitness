@@ -58,7 +58,7 @@ export default function AdminDashboardLayout({
 
   // While loading user, show a loading screen.
   // We no longer check for authorization here, just authentication.
-  if (isUserLoading || !user || !isClient) {
+  if (isUserLoading || !user) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
@@ -94,7 +94,7 @@ export default function AdminDashboardLayout({
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="space-y-2">
-          {user && (
+          {isClient && user && (
             <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
               <Avatar className="h-9 w-9">
                 {avatar && <AvatarImage src={user.photoURL || avatar.imageUrl} data-ai-hint={avatar.imageHint} />}
@@ -105,6 +105,15 @@ export default function AdminDashboardLayout({
                   <span className="text-xs text-muted-foreground truncate">{user.email || "admin@muscleup.com"}</span>
               </div>
             </div>
+          )}
+          {!isClient && (
+             <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <div className="flex flex-col gap-1.5 overflow-hidden w-full">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
           )}
           <SidebarMenuButton asChild variant="ghost" onClick={handleLogout}>
             <button type="button">
