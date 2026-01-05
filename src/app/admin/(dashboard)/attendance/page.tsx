@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, collectionGroup, query, getDocs, Timestamp, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, PieChart, User } from 'lucide-react';
-import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Cell, Tooltip, Legend } from 'recharts';
-import { startOfMonth, endOfMonth, getDaysInMonth } from 'date-fns';
+import { AlertTriangle, User } from 'lucide-react';
+import { Pie, PieChart as RechartsPieChart } from 'recharts';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { endOfMonth, getDaysInMonth, startOfMonth } from 'date-fns';
 
 interface UserAttendanceData {
   userId: string;
@@ -18,7 +19,16 @@ interface UserAttendanceData {
   totalDaysInMonth: number;
 }
 
-const COLORS = ['#16a34a', '#e2e8f0']; // Green for present, Gray for absent
+const chartConfig = {
+  present: {
+    label: 'Present',
+    color: 'hsl(var(--chart-1))',
+  },
+  absent: {
+    label: 'Absent',
+    color: 'hsl(var(--muted))',
+  },
+} satisfies ChartConfig;
 
 export default function AdminAttendancePage() {
   const firestore = useFirestore();
@@ -73,7 +83,7 @@ export default function AdminAttendancePage() {
         const results = await Promise.all(attendancePromises);
         setAttendanceData(results);
       } catch (err: any) {
-        setError("Failed to fetch attendance data. Check permissions or network.");
+        setError('Failed to fetch attendance data. Check permissions or network.');
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -104,15 +114,15 @@ export default function AdminAttendancePage() {
         </div>
       );
     }
-    
+
     if (error) {
-       return (
+      return (
         <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
-       )
+      );
     }
 
     if (attendanceData.length === 0) {
@@ -129,8 +139,8 @@ export default function AdminAttendancePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {attendanceData.map((data) => {
           const chartData = [
-            { name: 'Present', value: data.presentDays },
-            { name: 'Absent', value: data.totalDaysInMonth - data.presentDays },
+            { name: 'present', value: data.presentDays, fill: 'var(--color-present)' },
+            { name: 'absent', value: data.totalDaysInMonth - data.presentDays, fill: 'var(--color-absent)' },
           ];
 
           return (
@@ -140,36 +150,21 @@ export default function AdminAttendancePage() {
                   <CardTitle className="text-base font-medium">{data.userName}</CardTitle>
                   <CardDescription className="text-xs">{data.userEmail}</CardDescription>
                 </div>
-                 <User className="h-4 w-4 text-muted-foreground" />
+                <User className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                 <p className="text-2xl font-bold">
-                    {data.totalDaysInMonth > 0 ? ((data.presentDays / data.totalDaysInMonth) * 100).toFixed(0) : 0}%
-                 </p>
-                 <p className="text-xs text-muted-foreground">
-                    {data.presentDays} of {data.totalDaysInMonth} days attended this month
+                <p className="text-2xl font-bold">
+                  {data.totalDaysInMonth > 0 ? ((data.presentDays / data.totalDaysInMonth) * 100).toFixed(0) : 0}%
                 </p>
-                <div className="h-[200px] w-full mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={chartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => `${value} days`} />
-                      <Legend iconSize={10} />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  {data.presentDays} of {data.totalDaysInMonth} days attended this month
+                </p>
+                <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[200px] w-full mt-4">
+                  <RechartsPieChart>
+                    <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
+                    <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} />
+                  </RechartsPieChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           );
