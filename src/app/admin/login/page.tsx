@@ -1,21 +1,23 @@
 'use client';
 
-import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Logo } from '@/components/Logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { Logo } from '@/components/Logo';
+import { useAuth, useUser, useFirestore }from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
+
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -24,9 +26,11 @@ const formSchema = z.object({
 
 export default function AdminLoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,8 +40,8 @@ export default function AdminLoginPage() {
     },
   });
 
-  // The onSubmit function is now synchronous, which works better with RHF's isSubmitting state.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setError(null);
     if (!auth) {
         toast({
             variant: 'destructive',
@@ -46,16 +50,49 @@ export default function AdminLoginPage() {
         });
         return;
     }
-    initiateEmailSignIn(auth, values.email, values.password);
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const loggedInUser = userCredential.user;
+
+        if (loggedInUser && firestore) {
+            const adminRoleDoc = doc(firestore, 'roles_admin', loggedInUser.uid);
+            const adminDocSnapshot = await getDoc(adminRoleDoc);
+
+            if (adminDocSnapshot.exists()) {
+                // User is an admin, redirect
+                router.push('/admin/memberships');
+            } else {
+                // Not an admin, sign out and show error
+                await auth.signOut();
+                setError('You are not authorized to access this panel.');
+            }
+        }
+    } catch (e: any) {
+        // Handle Firebase auth errors (wrong password, user not found, etc.)
+        const errorMessage = e.code === 'auth/invalid-credential' 
+            ? 'Invalid email or password.'
+            : e.message || 'An unexpected error occurred.';
+        setError(errorMessage);
+    }
   }
   
+  // This effect handles the case where an already-logged-in user (from a previous session)
+  // navigates to the login page.
   useEffect(() => {
-    if (!isUserLoading && user) {
-      // TODO: We should verify if the user is an admin here before redirecting.
-      // For now, we assume any login from this page is an admin.
-      router.push('/admin/memberships');
-    }
-  }, [user, isUserLoading, router]);
+    const checkAdminStatus = async () => {
+        if (!isUserLoading && user && firestore) {
+            const adminRoleDoc = doc(firestore, 'roles_admin', user.uid);
+            const adminDocSnapshot = await getDoc(adminRoleDoc);
+            if (adminDocSnapshot.exists()) {
+                router.push('/admin/memberships');
+            }
+            // If they are a user but not an admin, they just stay on the login page
+            // they can attempt to log in as an admin.
+        }
+    };
+    checkAdminStatus();
+  }, [user, isUserLoading, firestore, router]);
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
@@ -66,6 +103,13 @@ export default function AdminLoginPage() {
           <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Login Failed</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
