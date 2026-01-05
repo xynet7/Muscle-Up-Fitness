@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import type { DayPicker } from 'react-day-picker';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,37 +45,33 @@ export default function ProfilePage() {
 
   const { data: attendance, isLoading: isLoadingAttendance } = useCollection(attendanceQuery);
 
-  const attendedDays = useMemo(() => {
+  const attendedDays: Date[] = useMemo(() => {
     if (!attendance) return [];
-    // Using a Set of date strings to ensure uniqueness
-    const uniqueDateStrings = new Set(
-      attendance.map(a => format(a.date.toDate(), 'yyyy-MM-dd'))
-    );
-    // Convert back to Date objects, ensuring correct timezone handling
-    return Array.from(uniqueDateStrings).map(dateStr => {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    });
+    // Convert Firestore timestamps to Date objects
+    return attendance.map(a => a.date.toDate());
   }, [attendance]);
 
-  const handleDayClick = async (day: Date | undefined) => {
-    if (!day || !user || !firestore) return;
+  const handleDayClick: React.ComponentProps<typeof DayPicker>['onDayClick'] = async (day, modifiers) => {
+    if (!user || !firestore || modifiers.outside) return;
 
+    // We use a consistent YYYY-MM-DD format for the document ID.
     const docId = format(day, 'yyyy-MM-dd');
     const docRef = doc(firestore, `users/${user.uid}/attendance/${docId}`);
 
-    const isAlreadySelected = attendedDays.some(
+    const isAlreadyAttended = attendedDays.some(
       (attendedDay) => format(attendedDay, 'yyyy-MM-dd') === docId
     );
 
-    if (isAlreadySelected) {
+    if (isAlreadyAttended) {
+      // It's an existing attendance day, so remove it
       deleteDocumentNonBlocking(docRef);
-       toast({ title: 'Attendance Removed', description: `Removed attendance for ${format(day, 'PPP')}.` });
+      toast({ title: 'Attendance Removed', description: `Removed attendance for ${format(day, 'PPP')}.` });
     } else {
+      // It's a new attendance day, so add it
       const attendanceData = {
         id: docId,
         userId: user.uid,
-        date: day,
+        date: day, // Store the full Date object
       };
       setDocumentNonBlocking(docRef, attendanceData, {});
       toast({ title: 'Attendance Marked!', description: `You marked your attendance for ${format(day, 'PPP')}.` });
@@ -230,12 +227,12 @@ export default function ProfilePage() {
                     ) : (
                         <Calendar
                             mode="multiple"
-                            min={0}
                             selected={attendedDays}
-                            onSelect={handleDayClick as any}
+                            onDayClick={handleDayClick}
+                            modifiers={{ attended: attendedDays }}
+                            modifiersClassNames={{ attended: 'attended-day' }}
                             className="p-0"
                             classNames={{
-                                day_selected: "day-selected",
                                 day_today: "bg-accent text-accent-foreground",
                                 day_outside: "text-muted-foreground opacity-50",
                                 head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",

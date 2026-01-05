@@ -89,9 +89,22 @@ body {
 
 @layer utilities {
   .day-selected {
-      @apply bg-yellow-400 text-yellow-900;
+    @apply bg-primary text-primary-foreground;
+    @apply hover:bg-primary hover:text-primary-foreground;
+    @apply focus:bg-primary focus:text-primary-foreground;
   }
+
+  .attended-day {
+    @apply bg-yellow-400 text-yellow-900;
+    @apply hover:bg-yellow-400/90 hover:text-yellow-900;
+    @apply focus:bg-yellow-500 focus:text-yellow-900;
+  }
+
   .rdp-day_selected {
-      @apply bg-yellow-400 text-yellow-900;
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: hsl(var(--accent));
   }
 }
