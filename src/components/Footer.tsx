@@ -13,12 +13,14 @@ import { QRCode } from 'react-qrcode-logo';
 export function Footer() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [siteUrl, setSiteUrl] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const footerImage = placeholderImagesData.placeholderImages.find(p => p.id === 'footer-cta');
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
     // This ensures window is defined, so it runs only on the client
     setSiteUrl(window.location.origin);
+    setIsClient(true);
   }, []);
 
   return (
@@ -64,7 +66,7 @@ export function Footer() {
                 <PopoverContent className="w-auto p-4 bg-white">
                     <div className="text-center">
                         <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
-                        {siteUrl ? (
+                        {isClient && siteUrl ? (
                             <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
                         ) : (
                             <div className="h-[128px] w-[128px] bg-gray-200 animate-pulse rounded-md" />
