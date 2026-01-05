@@ -52,7 +52,7 @@ export default function ProfilePage() {
   }, [attendance]);
 
   const handleDayClick: React.ComponentProps<typeof DayPicker>['onDayClick'] = async (day, modifiers) => {
-    if (!user || !firestore || modifiers.outside) return;
+    if (!user || !firestore || modifiers.outside || !isClient) return;
 
     // We use a consistent YYYY-MM-DD format for the document ID.
     const docId = format(day, 'yyyy-MM-dd');
@@ -152,7 +152,7 @@ export default function ProfilePage() {
             <CardContent className="p-6 space-y-8">
             <div>
                 <h3 className="text-xl font-semibold font-headline mb-4">My Memberships</h3>
-                {isLoadingSubscriptions ? (
+                {isLoadingSubscriptions || !isClient ? (
                     <div className="space-y-4">
                         <Skeleton className="h-24 w-full rounded-lg" />
                     </div>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                         <Calendar
                             mode="multiple"
                             selected={attendedDays}
-                            onDayClick={handleDayClick}
+                            onDayClick={isClient ? handleDayClick : undefined}
                             modifiers={{ attended: attendedDays }}
                             modifiersClassNames={{ attended: 'attended-day' }}
                             className="p-0"
