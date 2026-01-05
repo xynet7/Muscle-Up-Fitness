@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { useAuth, useUser, useFirestore } from "@/firebase";
+import { useAuth, useUser } from "@/firebase";
 
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -34,45 +33,17 @@ export default function AdminDashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
-  const [isAuthorized, setIsAuthorized] = useState(false);
   
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    // Wait for Firebase services and user loading to complete.
-    if (isUserLoading || !firestore || !auth) {
-      return;
-    }
-
-    // If there's no user, they are not logged in. Redirect to login.
-    if (!user) {
+    // If auth state is done loading and there is still no user,
+    // they are not logged in. Redirect to login.
+    if (!isUserLoading && !user) {
       router.push('/admin/login');
-      return;
     }
-
-    // User is logged in, check if they are an admin.
-    const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
-    getDoc(adminRoleRef)
-      .then((docSnap) => {
-        if (docSnap.exists()) {
-          // User is an admin, grant access.
-          setIsAuthorized(true);
-        } else {
-          // User is not an admin, sign out and redirect with an error.
-          auth.signOut();
-          router.push('/admin/login?error=You are not authorized to access this panel');
-        }
-      })
-      .catch((error) => {
-        // Handle potential errors during the check (e.g., Firestore offline).
-        console.error("Error checking admin role:", error);
-        auth.signOut();
-        router.push('/admin/login?error=Error verifying authorization');
-      });
-      
-  }, [user?.uid, isUserLoading, firestore, auth, router]); // Depend on the stable user.uid
+  }, [user, isUserLoading, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -80,13 +51,14 @@ export default function AdminDashboardLayout({
     router.push('/admin/login');
   };
 
-  // While loading user or checking authorization, show a loading screen.
-  if (isUserLoading || !isAuthorized) {
+  // While loading user, show a loading screen.
+  // We no longer check for authorization here, just authentication.
+  if (isUserLoading || !user) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
                 <Logo />
-                <p className="text-muted-foreground">Verifying authorization...</p>
+                <p className="text-muted-foreground">Loading...</p>
                 <div className="w-full max-w-xs">
                     <Skeleton className="h-40 w-full" />
                 </div>
@@ -95,7 +67,7 @@ export default function AdminDashboardLayout({
     );
   }
 
-  // Render the dashboard if authorized.
+  // Render the dashboard if authenticated.
   return (
     <SidebarProvider>
       <Sidebar>
