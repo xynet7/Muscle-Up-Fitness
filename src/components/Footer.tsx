@@ -2,18 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/Logo';
-import { Instagram, Twitter } from 'lucide-react';
+import { Instagram, Twitter, QrCode } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Button } from './ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { QRCode } from 'react-qrcode-logo';
 
 export function Footer() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
+  const [siteUrl, setSiteUrl] = useState('');
   const footerImage = placeholderImagesData.placeholderImages.find(p => p.id === 'footer-cta');
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
+    // This ensures window is defined, so it runs only on the client
+    setSiteUrl(window.location.origin);
   }, []);
 
   return (
@@ -49,6 +54,24 @@ export function Footer() {
                     <span className="sr-only">Instagram</span>
                 </Link>
               </Button>
+               <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-transparent text-white border-white hover:bg-white hover:text-black rounded-full h-12 w-12">
+                        <QrCode className="h-6 w-6" />
+                        <span className="sr-only">Show QR Code</span>
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4 bg-white">
+                    <div className="text-center">
+                        <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
+                        {siteUrl ? (
+                            <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
+                        ) : (
+                            <div className="h-[128px] w-[128px] bg-gray-200 animate-pulse rounded-md" />
+                        )}
+                    </div>
+                </PopoverContent>
+              </Popover>
           </div>
         </div>
       </section>
@@ -67,3 +90,4 @@ export function Footer() {
     </footer>
   );
 }
+    
