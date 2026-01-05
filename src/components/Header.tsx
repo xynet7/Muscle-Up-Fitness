@@ -21,19 +21,18 @@ export function Header() {
   const auth = useAuth();
 
   const handleLogout = () => {
-    auth.signOut();
+    if (auth) {
+      auth.signOut();
+    }
   };
 
   const getInitials = (name?: string | null) => {
-    if (!name) return '';
-    const nameParts = name.split(' ');
-    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
-      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
-    }
-    if (nameParts[0]) {
-      return nameParts[0][0].toUpperCase();
-    }
-    return '';
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('');
   }
 
   return (
@@ -64,7 +63,7 @@ export function Header() {
                        <Avatar className="h-8 w-8">
                           <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
                           <AvatarFallback>
-                            <User className="h-5 w-5" />
+                            {getInitials(user.displayName)}
                           </AvatarFallback>
                         </Avatar>
                     </Button>
