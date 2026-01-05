@@ -82,7 +82,7 @@ export function Footer() {
             <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <Logo />
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              {isClient && currentYear ? `© ${currentYear} MuscleUp. All rights reserved.` : `\u00A0`}
+              {isClient && currentYear && `© ${currentYear} MuscleUp. All rights reserved.`}
             </p>
             </div>
         </div>
