@@ -25,6 +25,11 @@ export default function AdminAttendancePage() {
   const [attendanceData, setAttendanceData] = useState<UserAttendanceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -34,7 +39,7 @@ export default function AdminAttendancePage() {
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
   useEffect(() => {
-    if (!firestore || isLoadingUsers) return;
+    if (!firestore || isLoadingUsers || !isClient) return;
 
     const fetchAttendanceData = async () => {
       setIsLoading(true);
@@ -76,10 +81,10 @@ export default function AdminAttendancePage() {
     };
 
     fetchAttendanceData();
-  }, [firestore, users, isLoadingUsers]);
+  }, [firestore, users, isLoadingUsers, isClient]);
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading || !isClient) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -139,7 +144,7 @@ export default function AdminAttendancePage() {
               </CardHeader>
               <CardContent>
                  <p className="text-2xl font-bold">
-                    {((data.presentDays / data.totalDaysInMonth) * 100).toFixed(0)}%
+                    {data.totalDaysInMonth > 0 ? ((data.presentDays / data.totalDaysInMonth) * 100).toFixed(0) : 0}%
                  </p>
                  <p className="text-xs text-muted-foreground">
                     {data.presentDays} of {data.totalDaysInMonth} days attended this month
