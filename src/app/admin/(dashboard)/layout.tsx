@@ -34,15 +34,42 @@ export default function AdminDashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (isUserLoading || !firestore || !auth) return; // Wait for dependencies
+
+    if (!user) {
+      // Not logged in, redirect to login page.
       router.push('/admin/login');
+      return;
     }
-  }, [user, isUserLoading, router]);
+
+    // User is logged in, check if they are an admin.
+    const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
+    getDoc(adminRoleRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          // User is an admin, allow access.
+          setIsAuthorized(true);
+        } else {
+          // User is not an admin, sign out and redirect.
+          auth.signOut();
+          router.push('/admin/login?error=You are not authorized to access this panel');
+        }
+      })
+      .catch((error) => {
+        // Error fetching admin role, treat as unauthorized.
+        console.error("Error checking admin role:", error);
+        auth.signOut();
+        router.push('/admin/login?error=Error checking authorization');
+      });
+      
+  }, [user, isUserLoading, firestore, auth, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -50,12 +77,13 @@ export default function AdminDashboardLayout({
     router.push('/admin/login');
   };
 
-  if (isUserLoading || !user) {
+  // Show a loading state until the authorization check is complete.
+  if (isUserLoading || !isAuthorized) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
                 <Logo />
-                <p className="text-muted-foreground">Loading admin panel...</p>
+                <p className="text-muted-foreground">Verifying authorization...</p>
                 <div className="w-full max-w-xs">
                     <Skeleton className="h-40 w-full" />
                 </div>
@@ -64,6 +92,7 @@ export default function AdminDashboardLayout({
     );
   }
 
+  // Render the dashboard if authorized.
   return (
     <SidebarProvider>
       <Sidebar>
