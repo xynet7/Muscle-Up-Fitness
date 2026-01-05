@@ -139,7 +139,11 @@ export default function HomePage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                    <Link href={!isClient ? '#' : (user ? `/subscribe/${plan.id}` : "/signup")}>{isClient ? 'Subscribe Now' : '...'}</Link>
+                    {isClient ? (
+                      <Link href={user ? `/subscribe/${plan.id}` : "/signup"}>Subscribe Now</Link>
+                    ) : (
+                      <div className="w-full h-full" />
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

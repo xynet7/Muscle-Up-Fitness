@@ -65,13 +65,13 @@ export function Footer() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4 bg-white">
-                  {isClient && siteUrl ? (
+                  {isClient ? (
                     <div className="text-center">
                         <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
                         <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
                     </div>
                   ) : (
-                    <div className="h-[150px] w-[128px] bg-gray-200 animate-pulse rounded-md" />
+                    <div className="h-[150px] w-[128px] animate-pulse rounded-md" />
                   )}
                 </PopoverContent>
               </Popover>
@@ -83,7 +83,7 @@ export function Footer() {
             <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <Logo />
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              {isClient && currentYear ? `© ${currentYear} MuscleUp. All rights reserved.` : `\u00A0`}
+              {isClient ? `© ${currentYear} MuscleUp. All rights reserved.` : `\u00A0`}
             </p>
             </div>
         </div>
