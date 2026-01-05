@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, DocumentData } from 'firebase/firestore';
@@ -18,6 +18,11 @@ export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const subscriptionsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -124,6 +129,7 @@ export default function ProfilePage() {
                       };
 
                       const getSubscriptionPeriod = () => {
+                        if (!isClient) return 'Loading...';
                         if (sub.status === 'active' && sub.startDate && sub.endDate) {
                           const startDate = sub.startDate?.toDate ? format(sub.startDate.toDate(), 'PPP') : 'N/A';
                           const endDate = sub.endDate?.toDate ? format(sub.endDate.toDate(), 'PPP') : 'N/A';
