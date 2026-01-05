@@ -139,7 +139,7 @@ export default function ProfilePage() {
         <Card className="shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-md">
-                {isClient && <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />}
+                {isClient && user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
                 <AvatarFallback>
                   <User className="h-10 w-10" />
                 </AvatarFallback>
