@@ -86,3 +86,12 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .day-selected {
+      @apply bg-yellow-400 text-yellow-900;
+  }
+  .rdp-day_selected {
+      @apply bg-yellow-400 text-yellow-900;
+  }
+}

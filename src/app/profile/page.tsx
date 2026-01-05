@@ -45,11 +45,19 @@ export default function ProfilePage() {
   const { data: attendance, isLoading: isLoadingAttendance } = useCollection(attendanceQuery);
 
   const attendedDays = useMemo(() => {
-    return attendance?.map(a => a.date.toDate()) || [];
+    if (!attendance) return [];
+    // Use a Set to store unique date strings to prevent duplicates
+    const uniqueDateStrings = new Set(
+      attendance.map(a => format(startOfDay(a.date.toDate()), 'yyyy-MM-dd'))
+    );
+    // Convert the unique strings back to Date objects
+    return Array.from(uniqueDateStrings).map(dateStr => new Date(dateStr));
   }, [attendance]);
 
-  const handleDayClick = async (day: Date, { selected }: { selected: boolean }) => {
-    if (!user || !firestore) return;
+  const handleDayClick = async (day: Date | undefined, { selected }: { selected: boolean }) => {
+    if (!day || !user || !firestore) return;
+    
+    // Normalize the clicked day to the start of the day to ensure consistency
     const dayStart = startOfDay(day);
     const docId = format(dayStart, 'yyyy-MM-dd');
     const docRef = doc(firestore, `users/${user.uid}/attendance/${docId}`);
@@ -213,17 +221,20 @@ export default function ProfilePage() {
             </div>
             <div>
                  <h3 className="text-xl font-semibold font-headline mb-4">My Attendance</h3>
-                 <Card className="p-4">
+                 <Card className="p-4 flex justify-center">
                     {isLoadingAttendance ? (
-                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-80 w-full max-w-sm" />
                     ) : (
                         <Calendar
                             mode="multiple"
+                            min={0}
                             selected={attendedDays}
                             onDayClick={handleDayClick}
                             className="p-0"
                             classNames={{
-                                day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                                day_selected: "bg-primary/90 text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                                day_today: "bg-accent text-accent-foreground",
+                                day_outside: "text-muted-foreground opacity-50",
                             }}
                             footer={<p className="text-xs text-muted-foreground pt-4">Select a day to mark your attendance.</p>}
                         />
