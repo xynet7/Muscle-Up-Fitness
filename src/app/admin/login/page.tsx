@@ -3,17 +3,16 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Logo } from '@/components/Logo';
-import { useAuth, useUser, useFirestore }from '@/firebase';
+import { useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -26,11 +25,17 @@ const formSchema = z.object({
 
 export default function AdminLoginPage() {
   const auth = useAuth();
-  const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const authError = searchParams.get('error');
+    if (authError) {
+      setError(authError);
+    }
+  }, [searchParams]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,22 +56,10 @@ export default function AdminLoginPage() {
         return;
     }
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-        const loggedInUser = userCredential.user;
-
-        if (loggedInUser && firestore) {
-            const adminRoleDoc = doc(firestore, 'roles_admin', loggedInUser.uid);
-            const adminDocSnapshot = await getDoc(adminRoleDoc);
-
-            if (adminDocSnapshot.exists()) {
-                // User is an admin, redirect
-                router.push('/admin/memberships');
-            } else {
-                // Not an admin, sign out and show error
-                await auth.signOut();
-                setError('You are not authorized to access this panel.');
-            }
-        }
+        await signInWithEmailAndPassword(auth, values.email, values.password);
+        // On successful login, redirect to the admin dashboard.
+        // The dashboard layout will handle the admin role check.
+        router.push('/admin/memberships');
     } catch (e: any) {
         // Handle Firebase auth errors (wrong password, user not found, etc.)
         const errorMessage = e.code === 'auth/invalid-credential' 
@@ -76,24 +69,6 @@ export default function AdminLoginPage() {
     }
   }
   
-  // This effect handles the case where an already-logged-in user (from a previous session)
-  // navigates to the login page.
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-        if (!isUserLoading && user && firestore) {
-            const adminRoleDoc = doc(firestore, 'roles_admin', user.uid);
-            const adminDocSnapshot = await getDoc(adminRoleDoc);
-            if (adminDocSnapshot.exists()) {
-                router.push('/admin/memberships');
-            }
-            // If they are a user but not an admin, they just stay on the login page
-            // they can attempt to log in as an admin.
-        }
-    };
-    checkAdminStatus();
-  }, [user, isUserLoading, firestore, router]);
-
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
