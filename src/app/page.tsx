@@ -11,15 +11,10 @@ import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useUser } from '@/firebase';
-import { useEffect, useState } from 'react';
+import { ClientOnly } from '@/components/ClientOnly';
 
 export default function HomePage() {
   const { user } = useUser();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
@@ -139,11 +134,9 @@ export default function HomePage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                    {isClient ? (
+                    <ClientOnly>
                       <Link href={user ? `/subscribe/${plan.id}` : "/signup"}>Subscribe Now</Link>
-                    ) : (
-                      <div className="w-full h-full" />
-                    )}
+                    </ClientOnly>
                   </Button>
                 </CardFooter>
               </Card>

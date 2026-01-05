@@ -15,28 +15,20 @@ import {
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { doc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-
+import { ClientOnly } from './ClientOnly';
 
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const adminDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'roles_admin', user.uid);
   }, [user, firestore]);
 
-  const { data: adminDoc, isLoading: isCheckingAdmin } = useDoc(adminDocRef);
-
+  const { data: adminDoc } = useDoc(adminDocRef);
   const isAdmin = adminDoc?.exists();
-
 
   const handleLogout = () => {
     if (auth) {
@@ -54,7 +46,7 @@ export function Header() {
   }
   
   const renderAuthSection = () => {
-    if (!isClient || isUserLoading) {
+    if (isUserLoading) {
       return <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />;
     }
 
@@ -141,6 +133,16 @@ export function Header() {
                   <span className="hidden sm:inline">Plans</span>
                 </Link>
               </Button>
+              <ClientOnly>
+                {user && isAdmin && (
+                  <Button variant="ghost" asChild>
+                    <Link href="/admin">
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="hidden sm:inline">Dashboard</span>
+                    </Link>
+                  </Button>
+                )}
+              </ClientOnly>
               <Button variant="ghost" asChild>
                 <Link href="/workout-planner">
                   <Sparkles className="h-4 w-4" />
@@ -148,7 +150,7 @@ export function Header() {
                 </Link>
               </Button>
               
-              {renderAuthSection()}
+              <ClientOnly>{renderAuthSection()}</ClientOnly>
             </nav>
         </div>
       </div>
