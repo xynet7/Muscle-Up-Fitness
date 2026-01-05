@@ -72,7 +72,7 @@ export default function AdminDashboardLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <Logo />
+          <Logo disableLink={true} />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
