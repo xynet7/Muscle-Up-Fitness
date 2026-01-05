@@ -178,7 +178,6 @@ export default function ProfilePage() {
                       };
 
                       const getSubscriptionPeriod = () => {
-                        if (!isClient) return 'Loading...';
                         if (sub.status === 'active' && sub.startDate && sub.endDate) {
                           const startDate = sub.startDate?.toDate ? format(sub.startDate.toDate(), 'PPP') : 'N/A';
                           const endDate = sub.endDate?.toDate ? format(sub.endDate.toDate(), 'PPP') : 'N/A';
@@ -200,7 +199,7 @@ export default function ProfilePage() {
                                   <div>
                                   <p className="font-semibold">{plan.name}</p>
                                   <p className="text-sm text-muted-foreground">
-                                      {getSubscriptionPeriod()}
+                                    {isClient ? getSubscriptionPeriod() : <Skeleton className="h-4 w-64" />}
                                   </p>
                                   </div>
                               </div>

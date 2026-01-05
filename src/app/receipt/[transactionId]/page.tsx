@@ -89,7 +89,7 @@ export default function ReceiptPage() {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Date of Purchase:</span>
-                    <span>{purchaseDate}</span>
+                    <span>{isClient ? purchaseDate : <Skeleton className="h-4 w-32" />}</span>
                 </div>
             </div>
             <Separator />
