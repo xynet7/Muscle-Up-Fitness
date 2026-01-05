@@ -34,48 +34,15 @@ export default function AdminDashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(true);
-
+  
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    if (isUserLoading || !firestore || !auth) {
-      return;
+    if (!isUserLoading && !user) {
+      router.push('/admin/login');
     }
-
-    if (!user) {
-      router.push('/admin/login?error=You must be logged in to view this page.');
-      return;
-    }
-
-    const checkAdminStatus = async () => {
-      try {
-        const adminRoleDocRef = doc(firestore, 'roles_admin', user.uid);
-        const adminDocSnapshot = await getDoc(adminRoleDocRef);
-
-        if (adminDocSnapshot.exists()) {
-          setIsAuthorized(true);
-        } else {
-          await auth.signOut();
-          router.push('/admin/login?error=You are not authorized to access this panel.');
-        }
-      } catch (error) {
-        // A catch block here is important. If getDoc fails due to security rules,
-        // it means the user isn't allowed to even check, which implies they are not an admin.
-        console.error("Authorization check failed:", error);
-        await auth.signOut();
-        router.push('/admin/login?error=You do not have permission to access this panel.');
-      } finally {
-        setIsVerifying(false);
-      }
-    };
-
-    checkAdminStatus();
-
-  }, [user, isUserLoading, firestore, auth, router]);
+  }, [user, isUserLoading, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -83,12 +50,12 @@ export default function AdminDashboardLayout({
     router.push('/admin/login');
   };
 
-  if (isVerifying) {
+  if (isUserLoading || !user) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
                 <Logo />
-                <p className="text-muted-foreground">Verifying access...</p>
+                <p className="text-muted-foreground">Loading admin panel...</p>
                 <div className="w-full max-w-xs">
                     <Skeleton className="h-40 w-full" />
                 </div>
@@ -96,21 +63,6 @@ export default function AdminDashboardLayout({
         </div>
     );
   }
-
-  if (!isAuthorized) {
-      // This state is hit if verification is done, but the user was found to be unauthorized.
-      // We can show a brief message before the redirect effect in useEffect kicks in.
-      return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <div className="flex flex-col items-center gap-4 text-center">
-                <Logo />
-                <h1 className="text-xl font-semibold">Access Denied</h1>
-                <p className="text-muted-foreground">You are not authorized. Redirecting to login...</p>
-            </div>
-        </div>
-      );
-  }
-
 
   return (
     <SidebarProvider>
