@@ -1,0 +1,56 @@
+# The name of your backend, must be unique across all of your Firebase projects
+backendId: muscle-up-backend
+# The region to deploy your backend
+location: us-west1
+# The entry point for your backend
+entryPoint: node ./server.js
+# The runtime to use for your backend
+runtime: nodejs20
+# The instance class to use for your backend
+instanceClass: f1
+# The scaling settings for your backend
+scaling:
+  minInstances: 0
+  maxInstances: 2
+# The environment variables to set for your backend
+env:
+  - variable: GENKIT_ENV
+    value: prod
+  - variable: GCLOUD_PROJECT
+    value: ${PROJECT_ID}
+  - variable: FIREBASE_CONFIG
+    value: ${FIREBASE_CONFIG}
+# The services that your backend needs access to
+requiredAPIs:
+  - service: secretmanager.googleapis.com
+    reason: To access secrets for API keys and other sensitive data
+  - service: iam.googleapis.com
+    reason: To grant permissions to other services
+# A list of secrets that your backend needs access to
+secretEnvironmentVariables:
+  - key: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    # The version of the secret to use
+    version: '1'
+# The VPC connector to use for your backend
+vpc: {}
+# The service account to use for your backend
+serviceAccount: app-hosting-backend
+# The build commands to run for your backend
+build:
+  - npm install -g genkit
+  - npm install
+  - genkit-next-plugin-build
+# A list of files to include in your backend
+include:
+  - src/ai/flows/**/*
+  - src/ai/genkit.ts
+  - src/ai/dev.ts
+  - genkit.config.mjs
+  - package.json
+  - '**/node_modules/**/*'
+# A list of files to exclude from your backend
+exclude:
+  - '**/.firebase/**'
+  - '**/.firebaserc/**'
+  - '**/node_modules/firebase-tools/**'
