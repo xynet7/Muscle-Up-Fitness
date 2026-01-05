@@ -28,7 +28,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <section className="relative w-full h-auto pt-48 pb-20 md:pt-64 md:pb-28 flex items-center justify-center overflow-hidden">
+      <section className="relative w-full h-[560px] md:h-[640px] flex items-center justify-center overflow-hidden">
         <Carousel 
           opts={{ loop: true }}
           plugins={[autoplayPlugin.current]}
@@ -37,14 +37,16 @@ export default function HomePage() {
           <CarouselContent>
             {heroImages.map((image, index) => (
               <CarouselItem key={image.id}>
-                <Image
-                  src={image.imageUrl}
-                  alt={image.description}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  data-ai-hint={image.imageHint}
-                />
+                <div className="relative h-full w-full">
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.description}
+                    fill
+                    className="object-cover"
+                    priority={index === 0}
+                    data-ai-hint={image.imageHint}
+                  />
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
