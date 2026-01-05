@@ -1,3 +1,4 @@
+
 import { Users, LayoutDashboard } from "lucide-react";
 
 export const MEMBERSHIP_PLANS = [
@@ -10,6 +11,7 @@ export const MEMBERSHIP_PLANS = [
       'Access to all gym equipment',
       'Locker room access',
       'Standard workout plans',
+      'One-time payment',
     ],
     highlight: false,
   },
@@ -23,6 +25,7 @@ export const MEMBERSHIP_PLANS = [
       'Access to group classes',
       'Personalized workout tracker',
       '1x monthly personal training session',
+      'One-time payment',
     ],
     highlight: true,
   },
@@ -36,6 +39,7 @@ export const MEMBERSHIP_PLANS = [
       'Unlimited personal training sessions',
       'Guest passes',
       'Nutritional guidance',
+      'One-time payment',
     ],
     highlight: false,
   },
