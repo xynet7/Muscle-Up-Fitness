@@ -18,6 +18,7 @@ import { Loader2, Sparkles, AlertTriangle, Target, Dumbbell, Timer, Repeat } fro
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ClientOnly } from '@/components/ClientOnly';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(1, 'Please specify your fitness goals.'),
@@ -186,28 +187,30 @@ export function WorkoutPlannerForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                  control={form.control}
-                  name="subscriptionLevel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Membership Tier (for plan detail)</FormLabel>
-                       <Select onValueChange={field.onChange} value={field.value} disabled>
-                        <FormControl>
-                          <SelectTrigger>
-                            {isTierLoading ? <Skeleton className="h-5 w-24" /> : <SelectValue />}
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="basic">Basic</SelectItem>
-                          <SelectItem value="premium">Premium</SelectItem>
-                          <SelectItem value="vip">VIP</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <ClientOnly>
+                <FormField
+                    control={form.control}
+                    name="subscriptionLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Membership Tier (for plan detail)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled>
+                          <FormControl>
+                            <SelectTrigger>
+                              {isTierLoading ? <Skeleton className="h-5 w-24" /> : <SelectValue />}
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="basic">Basic</SelectItem>
+                            <SelectItem value="premium">Premium</SelectItem>
+                            <SelectItem value="vip">VIP</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </ClientOnly>
               <Button type="submit" disabled={isLoading || isTierLoading} className="w-full">
                 {isLoading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
