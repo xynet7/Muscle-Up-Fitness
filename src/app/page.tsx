@@ -12,8 +12,10 @@ import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useEffect, useState } from 'react';
+import { useUser } from '@/firebase';
 
 export default function HomePage() {
+  const { user } = useUser();
   const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -145,7 +147,7 @@ export default function HomePage() {
                 </CardContent>
                 <CardFooter>
                     <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                        <Link href="/signup">Subscribe Now</Link>
+                        <Link href={user ? `/receipt/${plan.id}` : "/signup"}>Subscribe Now</Link>
                     </Button>
                 </CardFooter>
               </Card>
