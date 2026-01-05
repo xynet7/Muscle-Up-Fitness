@@ -26,7 +26,7 @@ const formSchema = z.object({
 export default function AdminLoginPage() {
   const auth = useAuth();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +38,13 @@ export default function AdminLoginPage() {
     }
   }, [searchParams]);
 
-  // If user is already logged in and recognized, redirect them.
+  // If user is already logged in, redirect them to the admin dashboard.
+  // The layout will handle authorization.
   useEffect(() => {
-    if (user) {
+    if (user && !isUserLoading) {
         router.push('/admin');
     }
-  }, [user, router]);
+  }, [user, isUserLoading, router]);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -65,13 +66,8 @@ export default function AdminLoginPage() {
         return;
     }
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-        // Force a token refresh to ensure the latest auth state is available for Firestore rules.
-        await userCredential.user.getIdToken(true);
-        // On successful login, redirect to the admin dashboard.
-        // The dashboard layout will handle the admin role check.
-        router.push('/admin');
-
+        await signInWithEmailAndPassword(auth, values.email, values.password);
+        // On successful login, the useEffect hook will handle the redirect.
     } catch (e: any) {
         // Handle Firebase auth errors (wrong password, user not found, etc.)
         const errorMessage = e.code === 'auth/invalid-credential' 
