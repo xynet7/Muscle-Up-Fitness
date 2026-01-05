@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, User } from 'lucide-react';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Pie, PieChart } from 'recharts';
 import { endOfMonth, getDaysInMonth, startOfMonth } from 'date-fns';
+import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from 'recharts';
+
 
 interface UserAttendanceData {
   userId: string;
@@ -19,27 +19,11 @@ interface UserAttendanceData {
   totalDaysInMonth: number;
 }
 
-const chartConfig = {
-  present: {
-    label: 'Present',
-    color: 'hsl(var(--chart-1))',
-  },
-  absent: {
-    label: 'Absent',
-    color: 'hsl(var(--muted))',
-  },
-} satisfies ChartConfig;
-
 export default function AdminAttendancePage() {
   const firestore = useFirestore();
   const [attendanceData, setAttendanceData] = useState<UserAttendanceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -49,7 +33,7 @@ export default function AdminAttendancePage() {
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
   useEffect(() => {
-    if (!firestore || isLoadingUsers || !isClient) return;
+    if (!firestore || isLoadingUsers) return;
 
     const fetchAttendanceData = async () => {
       setIsLoading(true);
@@ -91,10 +75,10 @@ export default function AdminAttendancePage() {
     };
 
     fetchAttendanceData();
-  }, [firestore, users, isLoadingUsers, isClient]);
+  }, [firestore, users, isLoadingUsers]);
 
   const renderContent = () => {
-    if (isLoading || !isClient) {
+    if (isLoading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -138,10 +122,11 @@ export default function AdminAttendancePage() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {attendanceData.map((data) => {
-          const chartData = [
-            { name: 'present', value: data.presentDays, fill: 'var(--color-present)' },
-            { name: 'absent', value: data.totalDaysInMonth - data.presentDays, fill: 'var(--color-absent)' },
+           const chartData = [
+            { name: 'Present', value: data.presentDays },
+            { name: 'Absent', value: data.totalDaysInMonth - data.presentDays },
           ];
+          const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted))'];
 
           return (
             <Card key={data.userId}>
@@ -159,12 +144,33 @@ export default function AdminAttendancePage() {
                 <p className="text-xs text-muted-foreground">
                   {data.presentDays} of {data.totalDaysInMonth} days attended this month
                 </p>
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[200px] w-full mt-4">
-                  <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-                    <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} />
-                  </PieChart>
-                </ChartContainer>
+                <div className="w-full h-[200px] mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                     <PieChart>
+                        <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{
+                                background: 'hsl(var(--background))',
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: 'var(--radius)',
+                            }}
+                        />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           );

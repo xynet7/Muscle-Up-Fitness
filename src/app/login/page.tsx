@@ -39,6 +39,14 @@ export default function UserLoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Authentication service not available.",
+      });
+      return;
+    }
     try {
       initiateEmailSignIn(auth, values.email, values.password);
     } catch (error: any) {

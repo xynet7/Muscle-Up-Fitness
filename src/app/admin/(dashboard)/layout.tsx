@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth, useUser } from "@/firebase";
@@ -24,6 +23,7 @@ import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import placeholderImagesData from "@/lib/placeholder-images.json";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 export default function AdminDashboardLayout({
   children,
@@ -34,12 +34,7 @@ export default function AdminDashboardLayout({
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
-  const [isClient, setIsClient] = useState(false);
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
@@ -94,7 +89,7 @@ export default function AdminDashboardLayout({
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="space-y-2">
-          {isClient && user && (
+          {user && (
             <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
               <Avatar className="h-9 w-9">
                 {avatar && <AvatarImage src={user.photoURL || avatar.imageUrl} data-ai-hint={avatar.imageHint} />}
@@ -105,15 +100,6 @@ export default function AdminDashboardLayout({
                   <span className="text-xs text-muted-foreground truncate">{user.email || "admin@muscleup.com"}</span>
               </div>
             </div>
-          )}
-          {!isClient && (
-             <div className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
-                <Skeleton className="h-9 w-9 rounded-full" />
-                <div className="flex flex-col gap-1.5 overflow-hidden w-full">
-                    <Skeleton className="h-4 w-2/3" />
-                    <Skeleton className="h-3 w-full" />
-                </div>
-              </div>
           )}
           <SidebarMenuButton asChild variant="ghost" onClick={handleLogout}>
             <button type="button">

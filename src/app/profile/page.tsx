@@ -24,12 +24,7 @@ export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const subscriptionsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -52,7 +47,7 @@ export default function ProfilePage() {
   }, [attendance]);
 
   const handleDayClick: React.ComponentProps<typeof DayPicker>['onDayClick'] = async (day, modifiers) => {
-    if (!user || !firestore || modifiers.outside || !isClient) return;
+    if (!user || !firestore || modifiers.outside) return;
 
     // We use a consistent YYYY-MM-DD format for the document ID.
     const docId = format(day, 'yyyy-MM-dd');
@@ -139,7 +134,7 @@ export default function ProfilePage() {
         <Card className="shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-6">
             <Avatar className="h-20 w-20 border-4 border-background shadow-md">
-                {isClient && user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
+                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
                 <AvatarFallback>
                   <User className="h-10 w-10" />
                 </AvatarFallback>
@@ -152,7 +147,7 @@ export default function ProfilePage() {
             <CardContent className="p-6 space-y-8">
             <div>
                 <h3 className="text-xl font-semibold font-headline mb-4">My Memberships</h3>
-                {isLoadingSubscriptions || !isClient ? (
+                {isLoadingSubscriptions ? (
                     <div className="space-y-4">
                         <Skeleton className="h-24 w-full rounded-lg" />
                     </div>
@@ -199,7 +194,7 @@ export default function ProfilePage() {
                                   <div>
                                   <p className="font-semibold">{plan.name}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    {isClient ? getSubscriptionPeriod() : <Skeleton className="h-4 w-64 mt-1" />}
+                                    {getSubscriptionPeriod()}
                                   </p>
                                   </div>
                               </div>
@@ -227,7 +222,7 @@ export default function ProfilePage() {
                         <Calendar
                             mode="multiple"
                             selected={attendedDays}
-                            onDayClick={isClient ? handleDayClick : undefined}
+                            onDayClick={handleDayClick}
                             modifiers={{ attended: attendedDays }}
                             modifiersClassNames={{ attended: 'attended-day' }}
                             className="p-0"

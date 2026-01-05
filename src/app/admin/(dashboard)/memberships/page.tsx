@@ -19,16 +19,10 @@ import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { add } from "date-fns";
-import { useEffect, useState } from "react";
 
 export default function MembershipsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const subscriptionsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -149,7 +143,7 @@ export default function MembershipsPage() {
                     </TableCell>
                 </TableRow>
             )}
-            {isClient && !isLoadingSubscriptions && sortedSubscriptions?.map((membership: any) => (
+            {!isLoadingSubscriptions && sortedSubscriptions?.map((membership: any) => (
               <TableRow key={membership.id}>
                 <TableCell>
                   <div className="font-medium">{membership.userName}</div>

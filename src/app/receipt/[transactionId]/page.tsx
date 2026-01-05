@@ -20,11 +20,6 @@ export default function ReceiptPage() {
   const router = useRouter();
   const params = useParams();
   const transactionId = params.transactionId as string;
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const subscriptionDocRef = useMemoFirebase(() => {
     if (!user || !firestore || !transactionId) return null;
@@ -47,7 +42,7 @@ export default function ReceiptPage() {
   };
 
   const renderContent = () => {
-    if (isLoadingSubscription || isUserLoading || !isClient) {
+    if (isLoadingSubscription || isUserLoading) {
       return <ReceiptSkeleton />;
     }
 
@@ -89,7 +84,7 @@ export default function ReceiptPage() {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Date of Purchase:</span>
-                    <span>{isClient ? purchaseDate : <Skeleton className="h-4 w-32" />}</span>
+                    <span>{purchaseDate}</span>
                 </div>
             </div>
             <Separator />

@@ -11,15 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { QRCode } from 'react-qrcode-logo';
 
 export function Footer() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [siteUrl, setSiteUrl] = useState('');
-  const [isClient, setIsClient] = useState(false);
   const footerImage = placeholderImagesData.placeholderImages.find(p => p.id === 'footer-cta');
 
   useEffect(() => {
     // This effect runs only on the client, after hydration
-    setIsClient(true);
-    setCurrentYear(new Date().getFullYear());
     setSiteUrl(window.location.origin);
   }, []);
 
@@ -64,7 +61,7 @@ export function Footer() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4 bg-white">
-                  {isClient && siteUrl ? (
+                  {siteUrl ? (
                     <div className="text-center">
                         <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
                         <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
@@ -82,7 +79,7 @@ export function Footer() {
             <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <Logo />
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              {isClient && currentYear && `© ${currentYear} MuscleUp. All rights reserved.`}
+              © {currentYear} MuscleUp. All rights reserved.
             </p>
             </div>
         </div>

@@ -69,8 +69,9 @@ export function WorkoutPlannerForm() {
     if (subscriptions && subscriptions.length > 0) {
       const tierOrder: MembershipTier[] = ['vip', 'premium', 'basic'];
       const activeSubscriptions = subscriptions.filter((sub: any) => {
-          const endDate = sub.endDate?.toDate ? sub.endDate.toDate() : new Date();
-          return endDate > new Date();
+          // Check for active status and a valid end date
+          const endDate = sub.endDate?.toDate ? sub.endDate.toDate() : null;
+          return sub.status === 'active' && endDate && endDate > new Date();
       });
 
       for (const tier of tierOrder) {
