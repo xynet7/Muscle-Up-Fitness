@@ -34,7 +34,6 @@ export const MEMBERSHIP_PLANS = [
     features: [
       'All Premium Pro benefits',
       'Unlimited personal training sessions',
-      'Access to sauna and spa',
       'Guest passes',
       'Nutritional guidance',
     ],
