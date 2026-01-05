@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
-import { format, startOfDay, isEqual } from 'date-fns';
+import { format } from 'date-fns';
 import { Crown, Dumbbell, Star, AlertTriangle, User, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -46,35 +46,38 @@ export default function ProfilePage() {
 
   const attendedDays = useMemo(() => {
     if (!attendance) return [];
-    // Use a Set to store unique date strings to prevent duplicates
+    // Using a Set of date strings to ensure uniqueness
     const uniqueDateStrings = new Set(
-      attendance.map(a => format(startOfDay(a.date.toDate()), 'yyyy-MM-dd'))
+      attendance.map(a => format(a.date.toDate(), 'yyyy-MM-dd'))
     );
-    // Convert the unique strings back to Date objects
-    return Array.from(uniqueDateStrings).map(dateStr => new Date(dateStr));
+    // Convert back to Date objects, ensuring correct timezone handling
+    return Array.from(uniqueDateStrings).map(dateStr => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    });
   }, [attendance]);
 
-  const handleDayClick = async (day: Date | undefined, { selected }: { selected: boolean }) => {
+  const handleDayClick = async (day: Date | undefined) => {
     if (!day || !user || !firestore) return;
-    
-    // Normalize the clicked day to the start of the day to ensure consistency
-    const dayStart = startOfDay(day);
-    const docId = format(dayStart, 'yyyy-MM-dd');
+
+    const docId = format(day, 'yyyy-MM-dd');
     const docRef = doc(firestore, `users/${user.uid}/attendance/${docId}`);
 
-    if (selected) {
-      // Day was already selected, so un-select it (delete the record)
+    const isAlreadySelected = attendedDays.some(
+      (attendedDay) => format(attendedDay, 'yyyy-MM-dd') === docId
+    );
+
+    if (isAlreadySelected) {
       deleteDocumentNonBlocking(docRef);
-       toast({ title: 'Attendance Removed', description: `Removed attendance for ${format(dayStart, 'PPP')}.` });
+       toast({ title: 'Attendance Removed', description: `Removed attendance for ${format(day, 'PPP')}.` });
     } else {
-      // Day was not selected, so select it (create the record)
       const attendanceData = {
         id: docId,
         userId: user.uid,
-        date: dayStart,
+        date: day,
       };
       setDocumentNonBlocking(docRef, attendanceData, {});
-      toast({ title: 'Attendance Marked!', description: `You marked your attendance for ${format(dayStart, 'PPP')}.` });
+      toast({ title: 'Attendance Marked!', description: `You marked your attendance for ${format(day, 'PPP')}.` });
     }
   };
   
@@ -229,13 +232,16 @@ export default function ProfilePage() {
                             mode="multiple"
                             min={0}
                             selected={attendedDays}
-                            onDayClick={handleDayClick}
+                            onSelect={handleDayClick as any}
                             className="p-0"
                             classNames={{
-                                day_selected: "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+                                day_selected: "day-selected",
                                 day_today: "bg-accent text-accent-foreground",
                                 day_outside: "text-muted-foreground opacity-50",
-                                cell: "text-center",
+                                head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                                cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                                caption_label: 'text-sm font-medium',
+                                nav_button: 'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
                             }}
                             footer={<p className="text-xs text-muted-foreground pt-4 text-center">Select a day to mark your attendance.</p>}
                         />
