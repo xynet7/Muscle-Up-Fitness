@@ -17,10 +17,10 @@ export function Footer() {
   const footerImage = placeholderImagesData.placeholderImages.find(p => p.id === 'footer-cta');
 
   useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-    // This ensures window is defined, so it runs only on the client
-    setSiteUrl(window.location.origin);
+    // This effect runs only on the client, after hydration
     setIsClient(true);
+    setCurrentYear(new Date().getFullYear());
+    setSiteUrl(window.location.origin);
   }, []);
 
   return (
@@ -64,14 +64,16 @@ export function Footer() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4 bg-white">
+                  {isClient && (
                     <div className="text-center">
                         <p className="text-sm font-medium text-black mb-2">Scan to visit!</p>
-                        {isClient && siteUrl ? (
+                        {siteUrl ? (
                             <QRCode value={siteUrl} size={128} bgColor={"#ffffff"} fgColor={"#000000"} level={"L"} />
                         ) : (
                             <div className="h-[128px] w-[128px] bg-gray-200 animate-pulse rounded-md" />
                         )}
                     </div>
+                  )}
                 </PopoverContent>
               </Popover>
           </div>
@@ -82,7 +84,8 @@ export function Footer() {
             <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <Logo />
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              {currentYear && `© ${currentYear} MuscleUp. All rights reserved.`}
+              {isClient && currentYear && `© ${currentYear} MuscleUp. All rights reserved.`}
+              {!isClient && `© ${new Date().getFullYear()} MuscleUp. All rights reserved.`}
             </p>
             </div>
         </div>
