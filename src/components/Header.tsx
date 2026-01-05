@@ -22,6 +22,11 @@ export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const adminDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -67,7 +72,7 @@ export function Header() {
                 </Link>
               </Button>
               
-              {isAdmin && !isCheckingAdmin && (
+              {isClient && isAdmin && !isCheckingAdmin && (
                  <Button variant="ghost" asChild>
                     <Link href="/admin">
                         <LayoutDashboard className="h-4 w-4" />
@@ -76,7 +81,7 @@ export function Header() {
                  </Button>
               )}
               
-              {isUserLoading ? (
+              {!isClient || isUserLoading ? (
                 <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
               ) : user ? (
                 <DropdownMenu>
