@@ -36,20 +36,23 @@ export default function AdminLoginPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      initiateEmailSignIn(auth, values.email, values.password);
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
-      });
+  // The onSubmit function is now synchronous, which works better with RHF's isSubmitting state.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth) {
+        toast({
+            variant: 'destructive',
+            title: 'Login failed',
+            description: 'Authentication service is not available.'
+        });
+        return;
     }
+    initiateEmailSignIn(auth, values.email, values.password);
   }
   
   useEffect(() => {
     if (!isUserLoading && user) {
+      // TODO: We should verify if the user is an admin here before redirecting.
+      // For now, we assume any login from this page is an admin.
       router.push('/admin/memberships');
     }
   }, [user, isUserLoading, router]);
