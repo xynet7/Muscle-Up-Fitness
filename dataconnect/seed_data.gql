@@ -1,0 +1,94 @@
+mutation CreateSeedData @transaction @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  membership_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      name: "Basic",
+      description: "Basic membership",
+      benefits: "Access to gym",
+      durationInMonths: 1,
+      price: 29.99
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      name: "Premium",
+      description: "Premium membership",
+      benefits: "Access to gym, pool, and sauna",
+      durationInMonths: 12,
+      price: 299.99
+    }
+  ])
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440002",
+      email: "demouser1@example.com",
+      password: "password",
+      role: "member",
+      membershipId: "550e8400-e29b-41d4-a716-446655440000",
+      createdAt: "2024-04-26T12:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440003",
+      email: "demouser2@example.com",
+      password: "password",
+      role: "member",
+      membershipId: "550e8400-e29b-41d4-a716-446655440001",
+      createdAt: "2024-04-26T12:00:00Z"
+    }
+  ])
+  trainer_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440004",
+      firstName: "John",
+      lastName: "Doe",
+      specialty: "Cardio",
+      createdAt: "2024-04-26T12:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440005",
+      firstName: "Jane",
+      lastName: "Smith",
+      specialty: "Yoga",
+      createdAt: "2024-04-26T12:00:00Z"
+    }
+  ])
+  class_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440006",
+      name: "Cardio Blast",
+      description: "High intensity cardio",
+      capacity: 20,
+      durationInMinutes: 60,
+      location: "Main Gym",
+      scheduleTime: "2024-04-27T09:00:00Z",
+      trainerId: "550e8400-e29b-41d4-a716-446655440004",
+      createdAt: "2024-04-26T12:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440007",
+      name: "Yoga Flow",
+      description: "Relaxing yoga flow",
+      capacity: 15,
+      durationInMinutes: 75,
+      location: "Yoga Studio",
+      scheduleTime: "2024-04-27T10:30:00Z",
+      trainerId: "550e8400-e29b-41d4-a716-446655440005",
+      createdAt: "2024-04-26T12:00:00Z"
+    }
+  ])
+  booking_insertMany(data: [
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440002",
+      classId: "550e8400-e29b-41d4-a716-446655440006",
+      bookingDate: "2024-04-27",
+      createdAt: "2024-04-26T12:00:00Z",
+      status: "confirmed"
+    },
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440003",
+      classId: "550e8400-e29b-41d4-a716-446655440007",
+      bookingDate: "2024-04-27",
+      createdAt: "2024-04-26T12:00:00Z",
+      status: "confirmed"
+    }
+  ])
+}

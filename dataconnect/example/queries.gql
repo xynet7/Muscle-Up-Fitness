@@ -1,0 +1,26 @@
+mutation AddNewTrainer($firstName: String!, $lastName: String!, $specialty: String!) @auth(level: USER) {
+  trainer_insert(data: {firstName: $firstName, lastName: $lastName, specialty: $specialty, createdAt_expr: "request.time", id_expr: "uuidV4()"})
+}
+
+query GetClassesTaughtByTrainer($trainerId: UUID!) @auth(level: USER) {
+  classes(where: {trainerId: {eq: $trainerId}}) {
+    id
+    name
+    scheduleTime
+    durationInMinutes
+  }
+}
+
+mutation BookClass($userId: UUID!, $classId: UUID!, $bookingDate: Date!) @auth(level: USER) {
+  booking_insert(data: {userId: $userId, classId: $classId, bookingDate: $bookingDate, createdAt_expr: "request.time"})
+}
+
+query ListAvailableMemberships @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  memberships {
+    id
+    name
+    description
+    price
+    durationInMonths
+  }
+}
