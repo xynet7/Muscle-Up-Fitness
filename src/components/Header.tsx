@@ -15,12 +15,18 @@ import {
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { doc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const adminDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -66,7 +72,7 @@ export function Header() {
                 </Link>
               </Button>
               
-              {user && isAdmin && !isCheckingAdmin && (
+              {isClient && user && isAdmin && !isCheckingAdmin && (
                  <Button variant="ghost" asChild>
                     <Link href="/admin">
                         <LayoutDashboard className="h-4 w-4" />
