@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -13,16 +12,19 @@ import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export default function HomePage() {
   const { user } = useUser();
   const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
   
-  const autoplayPlugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
+  const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
+  
+  // This ensures the carousel plugin only runs on the client, fixing the hydration error.
+  useEffect(() => {
+    // No action needed here, the ref initialization is the key part.
+  }, []);
 
   return (
     <div className="flex flex-col">
