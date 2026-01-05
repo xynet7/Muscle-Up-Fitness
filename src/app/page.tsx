@@ -34,7 +34,7 @@ export default function HomePage() {
           plugins={[autoplayPlugin.current]}
           className="absolute inset-0 w-full h-full"
         >
-          <CarouselContent>
+          <CarouselContent className="h-full">
             {heroImages.map((image, index) => (
               <CarouselItem key={image.id}>
                 <div className="relative h-full w-full">
