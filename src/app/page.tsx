@@ -11,46 +11,26 @@ import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useUser } from '@/firebase';
-import React, { useEffect, useRef } from 'react';
-import Autoplay from "embla-carousel-autoplay";
+import React from 'react';
 
 export default function HomePage() {
   const { user } = useUser();
-  const heroImages = placeholderImagesData.placeholderImages.filter(p => p.id.startsWith('hero-gym'));
+  const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
-  
-  const plugin = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
-
 
   return (
     <div className="flex flex-col">
        <section className="relative w-full h-[560px] md:h-[640px] flex items-center justify-center overflow-hidden">
-        <Carousel
-          plugins={[plugin.current]}
-          className="w-full h-full"
-          opts={{ loop: true }}
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
-        >
-          <CarouselContent className="h-full">
-            {heroImages.map((image) => (
-              <CarouselItem key={image.id}>
-                <div className="w-full h-full relative">
-                  <Image
-                      src={image.imageUrl}
-                      alt={image.description}
-                      fill
-                      className="object-cover"
-                      priority={heroImages.indexOf(image) === 0}
-                      data-ai-hint={image.imageHint}
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+        {heroImage && (
+            <Image
+                src={heroImage.imageUrl}
+                alt={heroImage.description}
+                fill
+                className="object-cover"
+                priority
+                data-ai-hint={heroImage.imageHint}
+            />
+        )}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white animate-fade-in-down">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
