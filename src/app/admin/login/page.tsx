@@ -15,6 +15,7 @@ import { Logo } from '@/components/Logo';
 import { useAuth, useUser } from '@/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,36 @@ const formSchema = z.object({
 });
 
 export default function AdminLoginPage() {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+            <Card className="w-full max-w-sm">
+                <CardHeader className="text-center space-y-2">
+                    <Logo className="justify-center mb-2" />
+                    <CardTitle className="font-headline text-2xl">Admin Panel</CardTitle>
+                    <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
+
+  return <AdminLoginForm />;
+}
+
+
+function AdminLoginForm() {
   const auth = useAuth();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
