@@ -24,7 +24,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <div className="flex min-h-screen flex-col">
+          <div className="flex min-h-screen flex-col animate-fade-in-down">
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
