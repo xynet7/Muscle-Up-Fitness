@@ -44,7 +44,7 @@ export function Footer() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="icon" className="bg-transparent text-white border-white hover:bg-white hover:text-black rounded-full h-12 w-12">
-                <Link href="https://instagram.com" target="_blank" rel="noreferrer">
+                <Link href="https://www.instagram.com/muscleuppfitness?igsh=MXJ2NjVoaTNlZjJpOA==" target="_blank" rel="noreferrer">
                     <Instagram className="h-6 w-6" />
                     <span className="sr-only">Instagram</span>
                 </Link>
