@@ -63,54 +63,33 @@
           "description": "End date of the subscription.",
           "format": "date-time"
         },
-        "receiptId": {
+        "status": {
           "type": "string",
-          "description": "Reference to the Receipt. (Relationship: Receipt 1:1 Subscription)"
+          "description": "The current status of the subscription.",
+          "enum": [
+            "pending",
+            "active",
+            "expired",
+            "cancelled"
+          ]
+        },
+        "requestedDate": {
+          "type": "string",
+          "description": "The date the user requested the subscription.",
+          "format": "date-time"
+        },
+        "approvedDate": {
+          "type": "string",
+          "description": "The date an admin approved the subscription.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "userId",
         "membershipPlanId",
-        "startDate",
-        "endDate",
-        "receiptId"
-      ]
-    },
-    "Receipt": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Receipt",
-      "type": "object",
-      "description": "Represents a receipt for a membership purchase.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the receipt."
-        },
-        "transactionDate": {
-          "type": "string",
-          "description": "Date of the transaction.",
-          "format": "date-time"
-        },
-        "amount": {
-          "type": "number",
-          "description": "Amount paid for the subscription."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "Payment method used for the transaction (e.g., 'Credit Card', 'PayPal')."
-        },
-        "subscriptionId": {
-          "type": "string",
-          "description": "Reference to the Subscription. (Relationship: Subscription 1:1 Receipt)"
-        }
-      },
-      "required": [
-        "id",
-        "transactionDate",
-        "amount",
-        "paymentMethod",
-        "subscriptionId"
+        "status",
+        "requestedDate"
       ]
     },
     "User": {
@@ -136,17 +115,15 @@
           "description": "Email address of the user.",
           "format": "email"
         },
-        "fitnessGoals": {
-          "type": "string",
-          "description": "Fitness goals of the user."
+        "displayName": {
+            "type": "string",
+            "description": "Display name of the user."
         }
       },
       "required": [
         "id",
-        "firstName",
-        "lastName",
         "email",
-        "fitnessGoals"
+        "displayName"
       ]
     },
     "Admin": {
@@ -206,7 +183,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles.  Accessible by the user and potentially by admins for management.",
+          "description": "Stores user profiles. Accessible by the user and potentially by admins for management.",
           "params": [
             {
               "name": "userId",
@@ -235,22 +212,18 @@
           ]
         }
       },
-      {
-        "path": "/users/{userId}/receipts/{receiptId}",
+       {
+        "path": "/subscriptions_flat/{subscriptionId}",
         "definition": {
-          "entityName": "Receipt",
+          "entityName": "Subscription",
           "schema": {
-            "$ref": "#/backend/entities/Receipt"
+            "$ref": "#/backend/entities/Subscription"
           },
-          "description": "Stores receipts associated with a user's subscription. Accessible only by the user and potentially admins.",
+          "description": "A denormalized, flat collection of all subscriptions for easy querying by admins. Contains a 'userName' and 'userEmail' field for display purposes.",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier of the user, matching the Firebase Auth UID."
-            },
-            {
-              "name": "receiptId",
-              "description": "The unique identifier of the receipt."
+              "name": "subscriptionId",
+              "description": "The unique identifier of the subscription."
             }
           ]
         }
@@ -272,6 +245,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the MuscleUp gym membership application. It leverages path-based ownership for user-specific data and a dedicated collection for global admin roles. This design avoids hierarchical authorization dependencies (`get()` calls in security rules), enabling atomic operations (transactions/batches) and simplifying debugging. The design uses Structural Segregation (Homogeneous Security Posture) by storing all documents in a collection that shares the same security requirements. For example, user subscriptions are stored under their respective user document to enforce ownership. Membership Plans are stored in a top-level collection because they do not have an owner and are visible to all users. This structure enables secure list operations via segregation. Subscriptions and Receipts are stored as subcollections of users to keep ownership and access simple."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the MuscleUp gym membership application. It leverages path-based ownership for user-specific data and a dedicated collection for global admin roles. This design avoids hierarchical authorization dependencies (`get()` calls in security rules), enabling atomic operations (transactions/batches) and simplifying debugging. The design uses Structural Segregation (Homogeneous Security Posture) by storing all documents in a collection that shares the same security requirements. For example, user subscriptions are stored under their respective user document to enforce ownership. Membership Plans are stored in a top-level collection because they do not have an owner and are visible to all users. A denormalized `subscriptions_flat` collection is added to allow admins to easily list all subscriptions without needing to query across all users, which is not scalable or secure."
   }
 }

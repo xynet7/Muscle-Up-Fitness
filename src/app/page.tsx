@@ -147,7 +147,7 @@ export default function HomePage() {
                 </CardContent>
                 <CardFooter>
                     <Button asChild className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                        <Link href={user ? "/profile" : "/signup"}>Subscribe Now</Link>
+                        <Link href={user ? `/subscribe/${plan.id}` : "/signup"}>Subscribe Now</Link>
                     </Button>
                 </CardFooter>
               </Card>

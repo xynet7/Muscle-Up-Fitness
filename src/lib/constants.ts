@@ -65,7 +65,7 @@ export type Membership = {
   planId: 'basic' | 'premium' | 'vip';
   startDate: string;
   endDate: string;
-  status: 'active' | 'expired' | 'cancelled';
+  status: 'active' | 'expired' | 'cancelled' | 'pending';
 };
 
 export const MOCK_MEMBERSHIPS: Membership[] = [

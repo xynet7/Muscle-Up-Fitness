@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, DocumentData } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MEMBERSHIP_PLANS } from '@/lib/constants';
 import { format } from 'date-fns';
-import { Crown, Dumbbell, Star, AlertTriangle, User } from 'lucide-react';
+import { Crown, Dumbbell, Star, AlertTriangle, User, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -47,6 +48,12 @@ export default function ProfilePage() {
         return null;
     }
   };
+
+  const sortedSubscriptions = subscriptions?.sort((a, b) => {
+    const dateA = a.requestedDate?.toDate ? a.requestedDate.toDate() : new Date(0);
+    const dateB = b.requestedDate?.toDate ? b.requestedDate.toDate() : new Date(0);
+    return dateB.getTime() - dateA.getTime();
+  });
 
 
   if (isUserLoading || !user) {
@@ -95,34 +102,56 @@ export default function ProfilePage() {
                     <div className="space-y-4">
                         <Skeleton className="h-24 w-full rounded-lg" />
                     </div>
-                ) : subscriptions && subscriptions.length > 0 ? (
+                ) : sortedSubscriptions && sortedSubscriptions.length > 0 ? (
                 <div className="grid gap-4">
-                    {subscriptions.map((sub: any) => {
-                    const plan = getPlanDetails(sub.membershipPlanId);
-                    if (!plan) return null;
+                    {sortedSubscriptions.map((sub: any) => {
+                      const plan = getPlanDetails(sub.membershipPlanId);
+                      if (!plan) return null;
 
-                    const endDate = sub.endDate?.toDate ? sub.endDate.toDate() : new Date(sub.endDate);
-                    const isActive = endDate > new Date();
+                      const getStatusBadge = () => {
+                          switch (sub.status) {
+                            case 'active':
+                              return <Badge className="bg-green-600 hover:bg-green-700">Active</Badge>;
+                            case 'pending':
+                              return <Badge variant="secondary" className="bg-yellow-500 hover:bg-yellow-600 text-white"><Clock className="mr-1.5 h-3 w-3" />Pending Approval</Badge>;
+                            case 'expired':
+                                return <Badge variant="destructive">Expired</Badge>;
+                            case 'cancelled':
+                                return <Badge variant="destructive">Cancelled</Badge>;
+                            default:
+                                return <Badge variant="secondary">{sub.status}</Badge>;
+                          }
+                      };
 
-                    return (
-                        <div key={sub.id} className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary`}>
-                                    {getPlanIcon(plan.id)}
-                                </div>
-                                <div>
-                                <p className="font-semibold">{plan.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Subscribed on {sub.startDate?.toDate ? format(sub.startDate.toDate(), 'PPP') : 'N/A'}.
-                                    Renews on {format(endDate, 'PPP')}.
-                                </p>
-                                </div>
-                            </div>
-                            <Badge variant={isActive ? "default" : "destructive"} className={isActive ? "bg-green-600" : ""}>
-                                {isActive ? 'Active' : 'Expired'}
-                            </Badge>
-                        </div>
-                    );
+                      const getSubscriptionPeriod = () => {
+                        if (sub.status === 'active' && sub.startDate && sub.endDate) {
+                          const startDate = sub.startDate?.toDate ? format(sub.startDate.toDate(), 'PPP') : 'N/A';
+                          const endDate = sub.endDate?.toDate ? format(sub.endDate.toDate(), 'PPP') : 'N/A';
+                          return `Active from ${startDate} to ${endDate}.`;
+                        }
+                        if(sub.status === 'pending' && sub.requestedDate) {
+                            const requestedDate = sub.requestedDate?.toDate ? format(sub.requestedDate.toDate(), 'PPP') : 'N/A';
+                            return `Requested on ${requestedDate}.`
+                        }
+                        return 'Awaiting activation to see subscription period.';
+                      }
+
+                      return (
+                          <div key={sub.id} className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center gap-4">
+                                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary')}>
+                                      {getPlanIcon(plan.id)}
+                                  </div>
+                                  <div>
+                                  <p className="font-semibold">{plan.name}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                      {getSubscriptionPeriod()}
+                                  </p>
+                                  </div>
+                              </div>
+                              {getStatusBadge()}
+                          </div>
+                      );
                     })}
                 </div>
                 ) : (

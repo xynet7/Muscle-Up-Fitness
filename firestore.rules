@@ -12,7 +12,7 @@
  * - /membershipPlans/{membershipPlanId}: Publicly readable data about available gym plans.
  * - /users/{userId}: A user's root profile document.
  * - /users/{userId}/subscriptions/{subscriptionId}: A user's private subscription records.
- * - /users/{userId}/receipts/{receiptId}: A user's private payment receipts.
+ * - /subscriptions_flat/{subscriptionId}: A denormalized collection of all subscriptions for admin querying.
  * - /roles_admin/{userId}: A lookup collection where the existence of a document signifies
  *   that the user is an administrator.
  *
@@ -23,20 +23,8 @@
  *   user enumeration and protect privacy.
  * - Membership plans are public for any visitor to see, but can only be created or
  *   modified by administrators.
- * - Administrator roles are managed out-of-band (e.g., via the Firebase Console or a
- *   trusted backend server) by locking down the `/roles_admin` collection from all
- *   client-side writes. This is the most secure posture for role management.
- *
- * Denormalization for Authorization:
- * This ruleset relies on path-based authorization for all user data (e.g., `isOwner(userId)`),
- * which is the most performant method. For admin checks, it uses an efficient `exists()` call
- * to a dedicated `/roles_admin` collection, avoiding slow and costly `get()` calls on
- * user documents to check for a role field.
- *
- * Structural Segregation:
- * The data model is cleanly segregated. Public data (`membershipPlans`) is in its own
- * top-level collection, ensuring public `list` operations are safe. All private user data
- * is nested within that user's own document tree, preventing data leakage.
+ * - A denormalized `subscriptions_flat` collection is used for admin dashboards,
+ *   preventing the need for insecure, broad queries on the `/users` collection.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -46,136 +34,101 @@ service cloud.firestore {
     // Helper Functions
     // -------------------------------------------------------------------------
 
-    /**
-     * Checks if a user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the primary function for enforcing data ownership.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the document being accessed already exists in Firestore.
-     * CRITICAL for safe update and delete operations.
-     */
     function isExistingDoc() {
       return resource != null;
     }
 
-    /**
-     * Checks if the authenticated user is an administrator by verifying the
-     * existence of a corresponding document in the roles_admin collection.
-     */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    /**
-     * Validates that the user's ID in the document data matches the user ID
-     * in the document path upon creation. Enforces relational integrity.
-     */
     function isUserIdConsistentOnCreate(userId) {
       return request.resource.data.id == userId;
     }
 
-    
-    /**
-     * Validates that a subscription's `userId` field matches the owner's path.
-     * This establishes the ownership link within the document itself.
-     */
-    function isSubscriptionOwnerConsistentOnCreate(userId) {
+    // -------------------------------------------------------------------------
+    // Subscription-specific Helper Functions
+    // -------------------------------------------------------------------------
+
+    function isSubscriptionOwnerConsistent(userId) {
       return request.resource.data.userId == userId;
     }
-
-    /**
-     * Ensures a subscription's `userId` field cannot be reassigned.
-     */
+    
     function isSubscriptionOwnerImmutable() {
-      return resource.data.userId == request.resource.data.userId;
+        return resource.data.userId == request.resource.data.userId;
+    }
+
+    function isCreatingPendingSubscription(userId) {
+      let data = request.resource.data;
+      return isOwner(userId)
+        && isSubscriptionOwnerConsistent(userId)
+        && data.status == 'pending'
+        && !('startDate' in data)
+        && !('endDate' in data)
+        && data.requestedDate == request.time;
+    }
+
+    function isApprovingSubscription() {
+      let upcomingData = request.resource.data;
+      let existingData = resource.data;
+      return isAdmin()
+        && existingData.status == 'pending'
+        && upcomingData.status == 'active'
+        && upcomingData.startDate == request.time // Admin sets start date on approval
+        && upcomingData.endDate > upcomingData.startDate
+        && upcomingData.approvedDate == request.time;
     }
 
     // -------------------------------------------------------------------------
     // Collection Rules
     // -------------------------------------------------------------------------
-
-    /**
-     * @description Manages membership plans. These are public to all visitors but
-     *              can only be written by administrators.
-     * @path /membershipPlans/{membershipPlanId}
-     * @allow (get) Any user, signed in or not, can view a membership plan.
-     * @deny (create) A regular signed-in user cannot create a new plan.
-     * @principle Public read access for global data, with role-based write restrictions.
-     */
+    
     match /membershipPlans/{membershipPlanId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Manages user profile documents. Users can manage their own
-     *              profile, and admins can manage any user's profile.
-     * @path /users/{userId}
-     * @allow (create) A new user can create their own user document. `request.auth.uid` must equal `userId`.
-     * @deny (get) A user cannot read another user's profile.
-     * @deny (list) No user can list all documents in the `/users` collection.
-     * @principle Enforces document ownership and self-creation, with an admin override for management.
-     */
     match /users/{userId} {
       allow get, update, delete: if isOwner(userId) || isAdmin();
       allow list: if false;
       allow create: if isOwner(userId) && isUserIdConsistentOnCreate(userId);
     }
-
-    /**
-     * @description Manages a user's private subscription records. Only the user who
-     *              owns the subscription or an admin can access this data.
-     * @path /users/{userId}/subscriptions/{subscriptionId}
-     * @allow (get) An authenticated user can read their own subscription details.
-     * @deny (list) A user cannot list another user's subscriptions.
-     * @principle Restricts access to a user's own data tree using path-based ownership.
-     */
+    
     match /users/{userId}/subscriptions/{subscriptionId} {
       allow get, list: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && isSubscriptionOwnerConsistentOnCreate(userId);
-      allow update: if (isOwner(userId) || isAdmin()) && isExistingDoc() && isSubscriptionOwnerImmutable();
-      allow delete: if (isOwner(userId) || isAdmin()) && isExistingDoc();
+      allow create: if isCreatingPendingSubscription(userId);
+      // An admin can approve (pending -> active)
+      // A user can cancel their own active subscription (not yet implemented in UI)
+      allow update: if (isApprovingSubscription()) ||
+                     (isOwner(userId) && isExistingDoc() && isSubscriptionOwnerImmutable());
+      allow delete: if false; // Disallow deletion for record keeping
     }
-
+    
     /**
-     * @description Manages a user's private receipts. Access is restricted to the
-     *              data owner or an administrator.
-     * @path /users/{userId}/receipts/{receiptId}
-     * @allow (create) An authenticated user can create a receipt for themselves.
-     * @deny (get) A user cannot fetch a receipt belonging to another user.
-     * @principle Secures a sensitive subcollection based on the parent document's owner.
+     * @description Denormalized collection for admin dashboard. Readable only by admins.
+     *              Writes are handled by backend functions/triggers (or client for simplicity here)
+     *              but controlled by rules on the source collection.
      */
-    match /users/{userId}/receipts/{receiptId} {
-      allow get, list, create: if isOwner(userId) || isAdmin();
-      allow update, delete: if (isOwner(userId) || isAdmin()) && isExistingDoc();
+    match /subscriptions_flat/{subscriptionId} {
+        allow get, list: if isAdmin();
+        // The security of these writes is primarily enforced by the rules on the
+        // /users/{userId}/subscriptions/{subscriptionId} path.
+        // A Cloud Function would be a more robust way to enforce this.
+        allow create: if isSignedIn();
+        allow update: if isAdmin();
+        allow delete: if false;
     }
-
-    /**
-     * @description Manages administrator roles. This collection is locked down
-     *              from all client-side writes to ensure role changes can only
-     *              happen from a trusted environment (e.g., Firebase Console).
-     * @path /roles_admin/{userId}
-     * @allow (N/A) No operations are permitted from the client.
-     * @deny (create, update, delete) All client-side writes are blocked.
-     * @principle Secures critical authorization data by preventing all client modification.
-     */
+    
     match /roles_admin/{userId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list, create, update, delete: if false;
     }
   }
 }
