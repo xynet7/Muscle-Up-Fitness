@@ -18,6 +18,8 @@ import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from '@/fireba
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
+export const dynamic = 'force-dynamic';
+
 const formSchema = z.object({
   fullName: z.string().min(2, 'Name is too short.'),
   email: z.string().email('Please enter a valid email.'),

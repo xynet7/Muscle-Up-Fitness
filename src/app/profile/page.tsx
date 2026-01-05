@@ -14,6 +14,8 @@ import { format } from 'date-fns';
 import { Crown, Dumbbell, Star, AlertTriangle, User, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
