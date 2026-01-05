@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, User } from 'lucide-react';
-import { Pie, PieChart as RechartsPieChart } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Pie, PieChart } from 'recharts';
 import { endOfMonth, getDaysInMonth, startOfMonth } from 'date-fns';
 
 interface UserAttendanceData {
@@ -160,10 +160,10 @@ export default function AdminAttendancePage() {
                   {data.presentDays} of {data.totalDaysInMonth} days attended this month
                 </p>
                 <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[200px] w-full mt-4">
-                  <RechartsPieChart>
+                  <PieChart>
                     <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
                     <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} />
-                  </RechartsPieChart>
+                  </PieChart>
                 </ChartContainer>
               </CardContent>
             </Card>
