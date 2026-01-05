@@ -41,10 +41,13 @@ export default function AdminDashboardLayout({
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    if (isUserLoading || !firestore || !auth) return; // Wait for dependencies
+    // Wait for Firebase services and user loading to complete.
+    if (isUserLoading || !firestore || !auth) {
+      return;
+    }
 
+    // If there's no user, they are not logged in. Redirect to login.
     if (!user) {
-      // Not logged in, redirect to login page.
       router.push('/admin/login');
       return;
     }
@@ -54,22 +57,22 @@ export default function AdminDashboardLayout({
     getDoc(adminRoleRef)
       .then((docSnap) => {
         if (docSnap.exists()) {
-          // User is an admin, allow access.
+          // User is an admin, grant access.
           setIsAuthorized(true);
         } else {
-          // User is not an admin, sign out and redirect.
+          // User is not an admin, sign out and redirect with an error.
           auth.signOut();
           router.push('/admin/login?error=You are not authorized to access this panel');
         }
       })
       .catch((error) => {
-        // Error fetching admin role, treat as unauthorized.
+        // Handle potential errors during the check (e.g., Firestore offline).
         console.error("Error checking admin role:", error);
         auth.signOut();
-        router.push('/admin/login?error=Error checking authorization');
+        router.push('/admin/login?error=Error verifying authorization');
       });
       
-  }, [user, isUserLoading, firestore, auth, router]);
+  }, [user?.uid, isUserLoading, firestore, auth, router]); // Depend on the stable user.uid
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -77,7 +80,7 @@ export default function AdminDashboardLayout({
     router.push('/admin/login');
   };
 
-  // Show a loading state until the authorization check is complete.
+  // While loading user or checking authorization, show a loading screen.
   if (isUserLoading || !isAuthorized) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
