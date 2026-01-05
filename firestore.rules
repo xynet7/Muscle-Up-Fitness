@@ -47,8 +47,6 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // This function can be used in rules where a client doesn't need to read the admin doc itself.
-      // It's more secure as it doesn't require granting read access to the roles_admin collection.
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
@@ -78,17 +76,6 @@ service cloud.firestore {
         && data.requestedDate == request.time;
     }
 
-    function isApprovingSubscription() {
-      let upcomingData = request.resource.data;
-      let existingData = resource.data;
-      return isAdmin()
-        && existingData.status == 'pending'
-        && upcomingData.status == 'active'
-        && upcomingData.startDate == request.time // Admin sets start date on approval
-        && upcomingData.endDate > upcomingData.startDate
-        && upcomingData.approvedDate == request.time;
-    }
-
     // -------------------------------------------------------------------------
     // Collection Rules
     // -------------------------------------------------------------------------
@@ -109,8 +96,7 @@ service cloud.firestore {
       allow create: if isCreatingPendingSubscription(userId);
       // An admin can approve (pending -> active)
       // A user can cancel their own active subscription (not yet implemented in UI)
-      allow update: if (isApprovingSubscription()) ||
-                     (isOwner(userId) && isExistingDoc() && isSubscriptionOwnerImmutable());
+      allow update: if isAdmin() || (isOwner(userId) && isExistingDoc() && isSubscriptionOwnerImmutable());
       allow delete: if false; // Disallow deletion for record keeping
     }
     
@@ -123,7 +109,6 @@ service cloud.firestore {
         allow get, list: if isAdmin();
         // The security of these writes is primarily enforced by the rules on the
         // /users/{userId}/subscriptions/{subscriptionId} path.
-        // A Cloud Function would be a more robust way to enforce this.
         allow create: if isSignedIn();
         allow update: if isAdmin();
         allow delete: if false;

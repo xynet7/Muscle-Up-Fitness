@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { MEMBERSHIP_PLANS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
+import { collection, doc, query, serverTimestamp, writeBatch } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
@@ -46,7 +46,14 @@ export default function MembershipsPage() {
 
   const handleApprove = async (subId: string, userId: string, planId: string) => {
     if(!firestore) return;
+    
+    // Create a batch
+    const batch = writeBatch(firestore);
+
+    // Reference to the subscription document in the user's subcollection
     const userSubDocRef = doc(firestore, 'users', userId, 'subscriptions', subId);
+    
+    // Reference to the subscription document in the flat collection for admins
     const flatSubDocRef = doc(firestore, 'subscriptions_flat', subId);
     
     try {
@@ -61,9 +68,12 @@ export default function MembershipsPage() {
         approvedDate: serverTimestamp(),
       };
       
-      // Using a batch write would be better, but for simplicity we do two writes.
-      await updateDoc(userSubDocRef, updateData);
-      await updateDoc(flatSubDocRef, updateData);
+      // Add both update operations to the batch
+      batch.update(userSubDocRef, updateData);
+      batch.update(flatSubDocRef, updateData);
+
+      // Commit the batch
+      await batch.commit();
 
       toast({
         title: "Membership Approved",
@@ -74,7 +84,7 @@ export default function MembershipsPage() {
        toast({
         variant: "destructive",
         title: "Approval Failed",
-        description: "Could not approve the membership.",
+        description: "Could not approve the membership. You may not have the required permissions.",
       });
       console.error("Error approving membership:", error);
     }

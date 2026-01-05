@@ -42,45 +42,33 @@ export default function AdminDashboardLayout({
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
-    // This effect handles the entire authorization flow for the admin dashboard.
-    // It waits for the user loading state to be false before making any decisions.
     if (isUserLoading || !firestore || !auth) {
-      // If we are still loading user data or firebase services are not ready, do nothing.
-      // The UI will show a loading state.
       return;
     }
 
-    // At this point, isUserLoading is false. We can now check if a user is logged in.
     if (!user) {
-      // No user is logged in, redirect to the login page.
       router.push('/admin/login?error=You must be logged in to view this page.');
       return;
     }
 
-    // A user is logged in. Now, we must verify if they are an admin.
     const checkAdminStatus = async () => {
-      // No need to set isVerifying here as the initial state handles the loading screen.
       try {
         const adminRoleDocRef = doc(firestore, 'roles_admin', user.uid);
         const adminDocSnapshot = await getDoc(adminRoleDocRef);
 
         if (adminDocSnapshot.exists()) {
-          // The user has an admin role document. They are authorized.
           setIsAuthorized(true);
         } else {
-          // The user is logged in but does not have an admin role document.
-          // This is an unauthorized user. Sign them out and redirect.
           await auth.signOut();
           router.push('/admin/login?error=You are not authorized to access this panel.');
         }
       } catch (error) {
-        // This catch block will handle errors during the getDoc call,
-        // which can include permission errors if the rules are misconfigured.
-        console.error("Error checking admin status:", error);
+        // A catch block here is important. If getDoc fails due to security rules,
+        // it means the user isn't allowed to even check, which implies they are not an admin.
+        console.error("Authorization check failed:", error);
         await auth.signOut();
-        router.push('/admin/login?error=An error occurred while verifying your permissions.');
+        router.push('/admin/login?error=You do not have permission to access this panel.');
       } finally {
-        // Verification is complete, hide the loading screen.
         setIsVerifying(false);
       }
     };
@@ -95,9 +83,7 @@ export default function AdminDashboardLayout({
     router.push('/admin/login');
   };
 
-  // While we are verifying auth or if the user is not yet authorized, show a loading screen.
-  // This prevents flashing the UI before the authorization check is complete.
-  if (isVerifying || !isAuthorized) {
+  if (isVerifying) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
@@ -111,7 +97,21 @@ export default function AdminDashboardLayout({
     );
   }
 
-  // If we've reached this point, the user is authorized. Render the dashboard.
+  if (!isAuthorized) {
+      // This state is hit if verification is done, but the user was found to be unauthorized.
+      // We can show a brief message before the redirect effect in useEffect kicks in.
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <div className="flex flex-col items-center gap-4 text-center">
+                <Logo />
+                <h1 className="text-xl font-semibold">Access Denied</h1>
+                <p className="text-muted-foreground">You are not authorized. Redirecting to login...</p>
+            </div>
+        </div>
+      );
+  }
+
+
   return (
     <SidebarProvider>
       <Sidebar>
