@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { collection } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +14,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { type PersonalizedWorkoutPlanOutput } from '@/ai/flows/personalized-workout-plan-suggestions';
 import { generateWorkoutPlanAction } from './actions';
-import { Loader2, Sparkles, AlertTriangle, Target, Calendar, Repeat, Dumbbell, Timer } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, Target, Dumbbell, Timer, Repeat } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(1, 'Please specify your fitness goals.'),
@@ -25,22 +28,64 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type MembershipTier = 'basic' | 'premium' | 'vip';
 
 export function WorkoutPlannerForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PersonalizedWorkoutPlanOutput | null>(null);
   const { toast } = useToast();
+  
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const subscriptionsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'subscriptions');
+  }, [user, firestore]);
+
+  const { data: subscriptions, isLoading: isLoadingSubscriptions } = useCollection(subscriptionsQuery);
+
+  const [highestTier, setHighestTier] = useState<MembershipTier>('basic');
+  const [isTierLoading, setIsTierLoading] = useState(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fitnessGoals: '',
-      subscriptionLevel: 'premium',
+      subscriptionLevel: 'basic',
       currentFitnessLevel: 'intermediate',
       equipmentAvailable: 'full_gym',
       timeCommitment: '3-4 times a week, 60 minutes per session',
     },
   });
+
+  useEffect(() => {
+    if (isUserLoading || isLoadingSubscriptions) {
+      setIsTierLoading(true);
+      return;
+    }
+
+    let activeTier: MembershipTier = 'basic';
+    if (subscriptions && subscriptions.length > 0) {
+      const tierOrder: MembershipTier[] = ['vip', 'premium', 'basic'];
+      const activeSubscriptions = subscriptions.filter((sub: any) => {
+          const endDate = sub.endDate?.toDate ? sub.endDate.toDate() : new Date();
+          return endDate > new Date();
+      });
+
+      for (const tier of tierOrder) {
+        if (activeSubscriptions.some((sub: any) => sub.membershipPlanId === tier)) {
+          activeTier = tier;
+          break;
+        }
+      }
+    }
+    
+    setHighestTier(activeTier);
+    form.setValue('subscriptionLevel', activeTier);
+    setIsTierLoading(false);
+
+  }, [user, isUserLoading, subscriptions, isLoadingSubscriptions, form]);
 
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
@@ -146,9 +191,11 @@ export function WorkoutPlannerForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Membership Tier (for plan detail)</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       <Select onValueChange={field.onChange} value={field.value} disabled>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select your plan" /></SelectTrigger>
+                          <SelectTrigger>
+                            {isTierLoading ? <Skeleton className="h-5 w-24" /> : <SelectValue />}
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="basic">Basic</SelectItem>
@@ -160,7 +207,7 @@ export function WorkoutPlannerForm() {
                     </FormItem>
                   )}
                 />
-              <Button type="submit" disabled={isLoading} className="w-full">
+              <Button type="submit" disabled={isLoading || isTierLoading} className="w-full">
                 {isLoading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                 ) : (
