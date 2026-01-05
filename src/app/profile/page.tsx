@@ -108,7 +108,7 @@ export default function ProfilePage() {
   });
 
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || !isClient) {
     return (
       <div className="container mx-auto max-w-4xl py-12 px-4">
         <Card>

@@ -34,7 +34,12 @@ export default function AdminDashboardLayout({
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const [isClient, setIsClient] = useState(false);
   
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const avatar = placeholderImagesData.placeholderImages.find(p => p.id === 'admin-avatar');
 
   useEffect(() => {
@@ -53,7 +58,7 @@ export default function AdminDashboardLayout({
 
   // While loading user, show a loading screen.
   // We no longer check for authorization here, just authentication.
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || !isClient) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
