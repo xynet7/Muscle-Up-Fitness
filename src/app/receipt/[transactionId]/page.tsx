@@ -47,7 +47,7 @@ export default function ReceiptPage() {
   };
 
   const renderContent = () => {
-    if (isLoadingSubscription || isUserLoading) {
+    if (isLoadingSubscription || isUserLoading || !isClient) {
       return <ReceiptSkeleton />;
     }
 
@@ -89,7 +89,7 @@ export default function ReceiptPage() {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Date of Purchase:</span>
-                    <span>{isClient ? purchaseDate : 'Loading...'}</span>
+                    <span>{purchaseDate}</span>
                 </div>
             </div>
             <Separator />
