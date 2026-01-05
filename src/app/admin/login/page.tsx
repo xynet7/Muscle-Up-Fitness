@@ -13,10 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Logo } from '@/components/Logo';
 import { useAuth, useUser } from '@/firebase';
-import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -28,18 +26,18 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Display any error messages passed in the URL parameters.
     const authError = searchParams.get('error');
     if (authError) {
       setError(authError);
     }
   }, [searchParams]);
 
-  // If user is already logged in, redirect them to the admin dashboard.
-  // The layout will handle authorization.
+  // If a user is already logged in, redirect them to the admin dashboard.
+  // The dashboard layout is responsible for verifying if they are an authorized admin.
   useEffect(() => {
     if (user && !isUserLoading) {
         router.push('/admin');
@@ -58,21 +56,18 @@ export default function AdminLoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setError(null);
     if (!auth) {
-        toast({
-            variant: 'destructive',
-            title: 'Login failed',
-            description: 'Authentication service is not available.'
-        });
+        setError('Authentication service is not available.');
         return;
     }
     try {
         await signInWithEmailAndPassword(auth, values.email, values.password);
-        // On successful login, the useEffect hook will handle the redirect.
+        // On successful login, the `useEffect` hook above will detect the user
+        // and handle the redirect to the '/admin' page.
     } catch (e: any) {
-        // Handle Firebase auth errors (wrong password, user not found, etc.)
+        // Handle common Firebase auth errors.
         const errorMessage = e.code === 'auth/invalid-credential' 
-            ? 'Invalid email or password.'
-            : e.message || 'An unexpected error occurred.';
+            ? 'Invalid email or password. Please try again.'
+            : e.message || 'An unexpected error occurred during login.';
         setError(errorMessage);
     }
   }
