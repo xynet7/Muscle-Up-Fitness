@@ -10,47 +10,27 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import placeholderImagesData from '@/lib/placeholder-images.json';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 export default function HomePage() {
   const { user } = useUser();
-  const heroImages = placeholderImagesData.placeholderImages.filter(p => ['hero-gym', 'hero-gym-2'].includes(p.id));
+  const heroImage = placeholderImagesData.placeholderImages.find(p => p.id === 'hero-gym');
   const galleryImages = placeholderImagesData.placeholderImages.filter(p => ['gallery-1', 'gallery-2', 'gallery-3'].includes(p.id));
   
-  const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
-  
-  // This ensures the carousel plugin only runs on the client, fixing the hydration error.
-  useEffect(() => {
-    // No action needed here, the ref initialization is the key part.
-  }, []);
-
   return (
     <div className="flex flex-col">
       <section className="relative w-full h-[560px] md:h-[640px] flex items-center justify-center overflow-hidden">
-        <Carousel 
-          opts={{ loop: true }}
-          plugins={[autoplayPlugin.current]}
-          className="absolute inset-0 w-full h-full"
-        >
-          <CarouselContent className="h-full">
-            {heroImages.map((image, index) => (
-              <CarouselItem key={image.id}>
-                <div className="relative h-full w-full">
-                  <Image
-                    src={image.imageUrl}
-                    alt={image.description}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                    data-ai-hint={image.imageHint}
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+        {heroImage && (
+          <Image
+            src={heroImage.imageUrl}
+            alt={heroImage.description}
+            fill
+            className="object-cover"
+            priority
+            data-ai-hint={heroImage.imageHint}
+          />
+        )}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline tracking-tighter mb-4 animate-fade-in-down [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">

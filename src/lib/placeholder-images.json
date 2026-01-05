@@ -2,14 +2,8 @@
   "placeholderImages": [
     {
       "id": "hero-gym",
-      "description": "A dark gym with a person lifting weights",
-      "imageUrl": "https://iili.io/fjescnj.webp",
-      "imageHint": "gym dark"
-    },
-    {
-      "id": "hero-gym-2",
-      "description": "Man working out in a gym",
-      "imageUrl": "https://iili.io/fjvATml.webp",
+      "description": "Man working out in a gym with dramatic lighting",
+      "imageUrl": "https://i.ibb.co/d05V4v2g/2022-10-27.webp",
       "imageHint": "gym workout"
     },
     {
