@@ -131,7 +131,8 @@ service cloud.firestore {
     
     match /roles_admin/{userId} {
       // Allow a user to read their OWN admin document to verify their role on the client.
-      allow get: if isOwner(userId);
+      // This is secure because it checks if the requester's UID matches the document ID they are trying to access.
+      allow get: if request.auth.uid == userId;
       // Disallow anyone from listing all admins or making changes from the client.
       allow list, create, update, delete: if false;
     }
