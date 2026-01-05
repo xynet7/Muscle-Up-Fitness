@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles, User, Shield, LogIn, LogOut, UserCircle } from 'lucide-react';
+import { Dumbbell, Sparkles, User, Shield, LogIn, LogOut, UserCircle, LayoutDashboard } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,13 +12,25 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { doc } from 'firebase/firestore';
 
 
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
+
+  const adminDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'roles_admin', user.uid);
+  }, [user, firestore]);
+
+  const { data: adminDoc, isLoading: isCheckingAdmin } = useDoc(adminDocRef);
+
+  const isAdmin = adminDoc?.exists();
+
 
   const handleLogout = () => {
     if (auth) {
@@ -53,6 +65,15 @@ export function Header() {
                   <span className="hidden sm:inline">AI Planner</span>
                 </Link>
               </Button>
+              
+              {user && isAdmin && !isCheckingAdmin && (
+                 <Button variant="ghost" asChild>
+                    <Link href="/admin">
+                        <LayoutDashboard className="h-4 w-4" />
+                        <span className="hidden sm:inline">Dashboard</span>
+                    </Link>
+                 </Button>
+              )}
               
               {isUserLoading ? (
                 <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
